@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <TextView
+        android:id="@+id/tv_chat_msg_changed_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="2023년 7월 7일"
+        android:visibility="gone" />
+    
+    <LinearLayout
+        android:id="@+id/ll_chat_img_and_msg_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        >
+        <ImageView
+            android:id="@+id/iv_chat_msg_user_profile_image"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
+            android:src="@drawable/ic_user_default_profile_image"/>
+        <LinearLayout
+            android:id="@+id/ll_chat_msg_container"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+            <TextView
+                android:id="@+id/tv_chat_msg_content"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="13sp"
+                />
+            <TextView
+                android:id="@+id/tv_chat_msg_timestamp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:visibility="gone"
+                android:textSize="8sp"
+                android:textColor="#D3D3D3" />
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+</LinearLayout>
