@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical">
     <TextView
         android:id="@+id/tv_chat_msg_changed_date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="2023년 7월 7일"
         android:visibility="gone" />
     
     <LinearLayout
@@ -22,28 +21,46 @@
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:scaleType="centerCrop"
-            android:visibility="gone"
+            android:visibility="visible"
             android:src="@drawable/ic_user_default_profile_image"/>
+        <View
+            android:id="@+id/view_put_msg_to_right"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:visibility="gone" />
+
         <LinearLayout
             android:id="@+id/ll_chat_msg_container"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_gravity="center"
+            android:layout_margin="4dp"
             android:orientation="horizontal">
+
             <TextView
-                android:id="@+id/tv_chat_msg_content"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textSize="13sp"
-                />
-            <TextView
-                android:id="@+id/tv_chat_msg_timestamp"
+                android:id="@+id/tv_chat_msg_my_timestamp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
                 android:visibility="gone"
-                android:textSize="8sp"
+                android:textSize="6sp"
+                android:textColor="#D3D3D3" />
+            <TextView
+                android:id="@+id/tv_chat_msg_content"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="test"
+                android:layout_gravity="center"
+                android:textSize="14sp"
+                />
+            <TextView
+                android:id="@+id/tv_chat_msg_other_timestamp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:visibility="gone"
+                android:textSize="6sp"
                 android:textColor="#D3D3D3" />
 
         </LinearLayout>

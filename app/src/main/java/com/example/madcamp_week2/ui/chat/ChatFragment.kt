@@ -7,7 +7,9 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.madcamp_week2.databinding.FragmentChatBinding
-import com.example.madcamp_week2.sample.SampleChat
+import com.example.madcamp_week2.sample.chatRoom1
+import com.example.madcamp_week2.sample.chatRoom2
+import com.example.madcamp_week2.sample.globalChatRoomList
 
 class ChatFragment : Fragment() {
 
@@ -27,8 +29,8 @@ class ChatFragment : Fragment() {
         _binding = FragmentChatBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        binding.rcvChatlist.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
-        binding.rcvChatlist.adapter = ChatListAdapter(ArrayList<SampleChat>())
+        binding.rcvChatList.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+        binding.rcvChatList.adapter = ChatListAdapter(globalChatRoomList)
 
         return root
     }
