@@ -1,4 +1,7 @@
 package com.example.madcamp_week2.sample
 
-class SampleChatMessage {
-}
+data class SampleChatMessage(
+    val Sender: SampleUser,
+    val msg: String,
+    val timestamp: String
+)
