@@ -18,8 +18,13 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.viewpager2.widget.ViewPager2
 import com.example.madcamp_week2.databinding.FragmentMapBinding
+import com.example.madcamp_week2.sample.KaraokeOrPost
+import com.example.madcamp_week2.sample.SampleKaraoke
 import com.example.madcamp_week2.sample.globalKaraokeList
+import com.example.madcamp_week2.sample.globalPostList
+import com.google.android.material.tabs.TabLayoutMediator
 import net.daum.mf.map.api.MapPOIItem
 import net.daum.mf.map.api.MapPoint
 import net.daum.mf.map.api.MapView
@@ -167,17 +172,58 @@ class MapFragment : Fragment() {
         override fun onPOIItemSelected(p0: MapView?, p1: MapPOIItem?) {
             binding.kakaoMapview.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff
             val temp = p1!!.itemName.split("/")
-            binding.cvMapKaraokeInfoContainer.visibility = View.VISIBLE
-            binding.tvMapKaraokeName.text = temp[0]
-            binding.tvMapKaraokeAddr.text = temp[1]
-            binding.tvMapKaraokeRoadAddr.text = temp[2]
-            if(temp[5] == "") {
-                binding.tvMapKaraokePhone.text = "전화번호가 없어요!"
-                binding.tvMapKaraokePhone.setTextColor(Color.parseColor("#D3D3D3"))
-            } else {
-                binding.tvMapKaraokePhone.text = temp[5]
-                binding.tvMapKaraokePhone.setTextColor(Color.parseColor("#000000"))
+
+            val karaokeName = temp[0]
+            val karaokeAddr = temp[1]
+            val karaokeRoadAddr = temp[2]
+            val karaokeLat = temp[3]
+            val karaokeLong = temp[4]
+            val karaokePhone = temp[5]
+
+            // visibility setting
+            binding.vpMapCardviewContainer.visibility = View.VISIBLE
+
+            // make list here
+            val foundKaraoke = globalKaraokeList.find { it.latitude.toString() == karaokeLat && it.longitude.toString() == karaokeLong }
+            val karaokeOrPostList = ArrayList<KaraokeOrPost>()
+            karaokeOrPostList.add(KaraokeOrPost(foundKaraoke, null))
+
+            globalPostList.forEach {
+                if(foundKaraoke == it.karaoke)
+                    karaokeOrPostList.add(KaraokeOrPost(null, it))
             }
+
+            // adapter here
+            binding.vpMapCardviewContainer.adapter = CardListAdapter(karaokeOrPostList)
+            binding.vpMapCardviewContainer.registerOnPageChangeCallback(object: ViewPager2.OnPageChangeCallback() {
+                override fun onPageScrolled(
+                    position: Int,
+                    positionOffset: Float,
+                    positionOffsetPixels: Int
+                ) {
+                    super.onPageScrolled(position, positionOffset, positionOffsetPixels)
+                }
+
+                override fun onPageSelected(position: Int) {
+                    super.onPageSelected(position)
+                }
+
+                override fun onPageScrollStateChanged(state: Int) {
+                    super.onPageScrollStateChanged(state)
+                }
+            })
+
+//            binding.cvMapKaraokeInfoContainer.visibility = View.VISIBLE
+//            binding.tvMapKaraokeName.text =
+//            binding.tvMapKaraokeAddr.text = temp[1]
+//            binding.tvMapKaraokeRoadAddr.text = temp[2]
+//            if(temp[5] == "") {
+//                binding.tvMapKaraokePhone.text = "전화번호가 없어요!"
+//                binding.tvMapKaraokePhone.setTextColor(Color.parseColor("#D3D3D3"))
+//            } else {
+//                binding.tvMapKaraokePhone.text = temp[5]
+//                binding.tvMapKaraokePhone.setTextColor(Color.parseColor("#000000"))
+//            }
         }
 
         override fun onCalloutBalloonOfPOIItemTouched(p0: MapView?, p1: MapPOIItem?) {
@@ -207,7 +253,7 @@ class MapFragment : Fragment() {
         }
 
         override fun onMapViewSingleTapped(p0: MapView?, p1: MapPoint?) {
-            binding.cvMapKaraokeInfoContainer.visibility = View.GONE
+            binding.vpMapCardviewContainer.visibility = View.GONE
         }
 
         override fun onMapViewDoubleTapped(p0: MapView?, p1: MapPoint?) {
