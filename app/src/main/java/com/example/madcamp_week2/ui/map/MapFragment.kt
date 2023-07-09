@@ -31,7 +31,6 @@ class MapFragment : Fragment() {
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
-    private lateinit var mapView: MapView
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -126,7 +125,7 @@ class MapFragment : Fragment() {
 
     @SuppressLint("MissingPermission")
     private fun startTracking() {
-        mapView.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading
+        binding.kakaoMapview.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading
         val lm: LocationManager = this.requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
         val userNowLocation = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
 
@@ -136,18 +135,17 @@ class MapFragment : Fragment() {
         println("\n\n\n\n${uLatitude}\n\n\n\n")
         println("\n\n\n\n${uLongitude}\n\n\n\n")
 
-        binding.flMap.addView(mapView)
+
     }
 
     private fun stopTracking() {
-        mapView.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff
+        binding.kakaoMapview.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff
 //        binding.flMap.addView(mapView)
     }
 
 
     override fun onResume() {
         super.onResume()
-        mapView = MapView(context)
         if(checkLocationService()) {
             permissionCheck()
 //            stopTracking()
@@ -162,7 +160,7 @@ class MapFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         stopTracking()
-        binding.flMap.removeAllViews()
+//        binding.flMap.removeAllViews()
     }
 
 
