@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.view.marginTop
 import androidx.recyclerview.widget.RecyclerView
 import com.example.madcamp_week2.R
 import com.example.madcamp_week2.sample.KaraokeOrPost
@@ -23,18 +24,22 @@ class CardListAdapter(private var list: MutableList<KaraokeOrPost>): RecyclerVie
         var tv_map_karaoke_addr: TextView = itemView!!.findViewById(R.id.tv_map_karaoke_addr)
         var tv_map_karaoke_road_addr: TextView = itemView!!.findViewById(R.id.tv_map_karaoke_road_addr)
         var tv_map_karaoke_phone: TextView = itemView!!.findViewById(R.id.tv_map_karaoke_phone)
+        var ll_map_new_post_button_container: LinearLayout = itemView!!.findViewById(R.id.ll_map_new_post_button_container)
+        var tv_map_new_post_button: TextView = itemView!!.findViewById(R.id.tv_map_new_post_button)
 
         // post info cardview
         var ll_map_post_info_container: LinearLayout = itemView!!.findViewById(R.id.ll_map_post_info_container)
         var tv_map_post_username: TextView = itemView!!.findViewById(R.id.tv_map_post_username)
         var tv_map_post_user_comment: TextView = itemView!!.findViewById(R.id.tv_map_post_user_comment)
-        var ll_map_post_user_genre_container: LinearLayout = itemView!!.findViewById(R.id.ll_map_post_user_genre_container)
-        var ll_map_post_button_container: LinearLayout = itemView!!.findViewById(R.id.ll_map_post_button_container)
+        var ll_map_post_user_genre_container1: LinearLayout = itemView!!.findViewById(R.id.ll_map_post_user_genre_container1)
+        var ll_map_post_user_genre_container2: LinearLayout = itemView!!.findViewById(R.id.ll_map_post_user_genre_container2)
+        var ll_map_chat_and_join_button_container: LinearLayout = itemView!!.findViewById(R.id.ll_map_chat_and_join_button_container)
         var tv_map_post_chat_button: TextView = itemView!!.findViewById(R.id.tv_map_post_chat_button)
         var tv_map_post_join_button: TextView = itemView!!.findViewById(R.id.tv_map_post_join_button)
 
 
         fun bind(item: KaraokeOrPost, position: Int) {
+            println("\n\n\nAdapter position: ${position}\n\n\n")
             if(item.post == null) {
                 // karaoke info
                 val karaoke = item.karaoke
@@ -42,6 +47,8 @@ class CardListAdapter(private var list: MutableList<KaraokeOrPost>): RecyclerVie
                 // visibility setting
                 ll_map_post_info_container.visibility = View.GONE
                 ll_map_karaoke_info_container.visibility = View.VISIBLE
+                ll_map_chat_and_join_button_container.visibility = View.GONE
+                ll_map_new_post_button_container.visibility = View.VISIBLE
 
                 // name, addr, road_addr setting
                 tv_map_karaoke_name.text = karaoke!!.name
@@ -57,6 +64,9 @@ class CardListAdapter(private var list: MutableList<KaraokeOrPost>): RecyclerVie
                     tv_map_karaoke_phone.setTextColor(Color.parseColor("#000000"))
                 }
 
+                // if i already uploaded the post, cannot press the button
+                tv_map_new_post_button.setOnClickListener {  }
+
             } else {
                 // post info
                 val user = item.post.host
@@ -64,6 +74,8 @@ class CardListAdapter(private var list: MutableList<KaraokeOrPost>): RecyclerVie
                 // visibility setting
                 ll_map_karaoke_info_container.visibility = View.GONE
                 ll_map_post_info_container.visibility = View.VISIBLE
+                ll_map_new_post_button_container.visibility = View.GONE
+                ll_map_chat_and_join_button_container.visibility = View.VISIBLE
 
                 // setting user name
                 tv_map_post_username.text = user.name
@@ -86,23 +98,46 @@ class CardListAdapter(private var list: MutableList<KaraokeOrPost>): RecyclerVie
                     textView.textSize = 10f
                     textView.setPadding(8, 8, 8, 8)
                     textView.gravity = Gravity.CENTER
+                    textView.setBackgroundResource(R.drawable.background_circular_dynamic)
+                    textView.setTextColor(Color.parseColor("#E45477"))
                     textView.id = i
 
                     val param: LinearLayout.LayoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
                     param.marginStart = 8
                     param.marginEnd = 8
-                    param.topMargin = 8
-                    param.bottomMargin = 8
+                    param.topMargin = 4
+                    param.bottomMargin = 4
 
                     textView.layoutParams = param
-                    ll_map_post_user_genre_container.addView(textView)
+
+                    if(i > 5) {
+                        ll_map_post_user_genre_container2.visibility = View.VISIBLE
+                        ll_map_post_user_genre_container2.addView(textView)
+                    } else {
+                        ll_map_post_user_genre_container1.addView(textView)
+                    }
+                }
+
+                val tempView1 = View(context)
+                val tempParam: LinearLayout.LayoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT)
+                tempParam.weight = 1f
+                tempView1.layoutParams = tempParam
+                ll_map_post_user_genre_container1.addView(tempView1)
+                if(ll_map_post_user_genre_container2.visibility == View.VISIBLE) {
+                    val tempView2 = View(context)
+                    val tempParam: LinearLayout.LayoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT)
+                    tempParam.weight = 1f
+                    tempView2.layoutParams = tempParam
+                    ll_map_post_user_genre_container2.addView(tempView2)
                 }
 
                 // if it is my post
-                if(user.hashCode() == user1.hashCode())
-                    ll_map_post_button_container.visibility = View.GONE
-                else {
-                    ll_map_post_button_container.visibility = View.VISIBLE
+                if(user.hashCode() == user1.hashCode()) {
+                    tv_map_post_chat_button.setTextColor(Color.parseColor("#D3D3D3"))
+                    tv_map_post_join_button.setTextColor(Color.parseColor("#D3D3D3"))
+                } else {
+                    tv_map_post_chat_button.setTextColor(Color.parseColor("#000000"))
+                    tv_map_post_join_button.setTextColor(Color.parseColor("#000000"))
 
                     // button setOnClickListener
                     tv_map_post_chat_button.setOnClickListener {  }

@@ -17,17 +17,21 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.widget.ViewPager2
+import com.example.madcamp_week2.R
 import com.example.madcamp_week2.databinding.FragmentMapBinding
 import com.example.madcamp_week2.sample.KaraokeOrPost
 import com.example.madcamp_week2.sample.SampleKaraoke
 import com.example.madcamp_week2.sample.globalKaraokeList
 import com.example.madcamp_week2.sample.globalPostList
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.tabs.TabLayoutMediator
 import net.daum.mf.map.api.MapPOIItem
 import net.daum.mf.map.api.MapPoint
 import net.daum.mf.map.api.MapView
+import net.daum.mf.map.api.MapView.GONE
 import net.daum.mf.map.api.MapView.MapViewEventListener
 
 class MapFragment : Fragment() {
@@ -48,9 +52,10 @@ class MapFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentMapBinding.inflate(inflater, container, false)
+//        _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_map, container, false)
         val root: View = binding.root
-        markerEventListener = MarkerEventListener(binding)
-        mapEventListener = MapEventListener(binding)
+        markerEventListener = MarkerEventListener(this, binding)
+        mapEventListener = MapEventListener(this, binding)
 //        mapView = MapView(context)
 //
 //        if(checkLocationService()) {
@@ -168,8 +173,11 @@ class MapFragment : Fragment() {
         _binding = null
     }
 
-    class MarkerEventListener(val binding: FragmentMapBinding): MapView.POIItemEventListener {
+    class MarkerEventListener(val fragment: MapFragment, val binding: FragmentMapBinding): MapView.POIItemEventListener {
         override fun onPOIItemSelected(p0: MapView?, p1: MapPOIItem?) {
+            val bottomNavigationView = fragment.requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
+            bottomNavigationView.visibility = View.GONE
+
             binding.kakaoMapview.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff
             val temp = p1!!.itemName.split("/")
 
@@ -242,7 +250,7 @@ class MapFragment : Fragment() {
 
     }
 
-    class MapEventListener(val binding: FragmentMapBinding): MapViewEventListener {
+    class MapEventListener(val fragment: MapFragment, val binding: FragmentMapBinding): MapViewEventListener {
         override fun onMapViewInitialized(p0: MapView?) {
         }
 
@@ -253,6 +261,8 @@ class MapFragment : Fragment() {
         }
 
         override fun onMapViewSingleTapped(p0: MapView?, p1: MapPoint?) {
+            val bottomNavigationView = fragment.requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
+            bottomNavigationView.visibility = View.VISIBLE
             binding.vpMapCardviewContainer.visibility = View.GONE
         }
 
