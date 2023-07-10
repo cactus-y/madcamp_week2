@@ -4,8 +4,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.madcamp_week2.R
 import com.example.madcamp_week2.databinding.FragmentChatBinding
 import com.example.madcamp_week2.sample.chatRoom1
 import com.example.madcamp_week2.sample.chatRoom2
@@ -27,6 +29,7 @@ class ChatFragment : Fragment() {
 
 
         _binding = FragmentChatBinding.inflate(inflater, container, false)
+//        _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_chat, container, false)
         val root: View = binding.root
 
         binding.rcvChatList.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)

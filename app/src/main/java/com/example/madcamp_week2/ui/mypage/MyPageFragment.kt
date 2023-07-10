@@ -7,8 +7,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.madcamp_week2.R
 import com.example.madcamp_week2.databinding.FragmentMypageBinding
 import com.example.madcamp_week2.sample.SampleKaraoke
 import com.example.madcamp_week2.sample.genres
@@ -31,6 +33,7 @@ class MyPageFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentMypageBinding.inflate(inflater, container, false)
+//        _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_mypage, container, false)
         val root: View = binding.root
 
         binding.tvMypageUserEditButton.setOnClickListener {
