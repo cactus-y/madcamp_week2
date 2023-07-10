@@ -2,22 +2,23 @@ package com.example.madcamp_week2.ui.mypage
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.madcamp_week2.R
 import com.example.madcamp_week2.databinding.FragmentMypageBinding
-import com.example.madcamp_week2.sample.SampleKaraoke
+import com.example.madcamp_week2.getUserInfoFromToken
 import com.example.madcamp_week2.sample.genres
 import com.example.madcamp_week2.sample.karaoke1
 import com.example.madcamp_week2.sample.karaoke2
 import com.example.madcamp_week2.sample.karaoke3
-import com.example.madcamp_week2.sample.user1
+import com.squareup.picasso.MemoryPolicy
+import com.squareup.picasso.Picasso
+
 
 class MyPageFragment : Fragment() {
 
@@ -32,40 +33,52 @@ class MyPageFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        val user = getUserInfoFromToken(requireContext())
+        Log.d("JWT user", "$user")
         _binding = FragmentMypageBinding.inflate(inflater, container, false)
 //        _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_mypage, container, false)
         val root: View = binding.root
 
-        binding.tvMypageUserEditButton.setOnClickListener {
-            // linearlayout's dynamic textviews should be removed
-            Intent(
-                context,
-                UserEditActivity::class.java
-            ).apply {
-//                putExtra("profileImageUri", "")
-                putExtra("userName", user1.name)
-                putExtra("userEmail", user1.email)
-                putExtra("genreSize", user1.genreInIndex.size)
-                for(i: Int in 0 until user1.genreInIndex.size) {
-                    putExtra(i.toString(), user1.genreInIndex[i])
-                }
+//        binding.tvMypageUserEditButton.setOnClickListener {
+//            Intent(
+//                context,
+//                UserEditActivity::class.java
+//            ).apply {
+////                putExtra("profileImageUri", "")
+//                putExtra("nickname", user.nickname)
+//                putExtra("email", user.email)
+//                putExtra("genreSize", user.musicGenre.size)
+//                putExtra("gender", if (user.gender) "female" else "male")
+//                putExtra("profileImage", user.profileImage)
+//
+//                for(i: Int in 0 until user.musicGenre.size) {
+//                    for(j: Int in 0 until genres.size)  {
+//                        if (genres[j] == user.musicGenre[i]) {
+//                            putExtra(i.toString(), j)
+//                        }
+//                    }
+//                }
+//
+//            }.run { requireContext().startActivity(this) }
+//        }
 
-            }.run { requireContext().startActivity(this) }
+        binding.nicknameTextView.text = user.nickname
+        binding.userEmailTextView.text = user.email
+        if (user.profileImage != null) {
+            Picasso.get().load(user.profileImage).memoryPolicy(MemoryPolicy.NO_CACHE)
+                .placeholder(com.example.madcamp_week2.R.drawable.placeholder_image)
+                .into(binding.ivMypageUserEditProfileImage)
         }
 
-        binding.tvMypageUserNickname.text = user1.name
-        binding.tvMypageUserEmail.text = user1.email
-
-        for(i: Int in 0 until user1.genreInIndex.size) {
+        for(i: Int in 0 until user.musicGenre.size) {
             val textView = TextView(context)
-            textView.text = genres[user1.genreInIndex[i]]
-            textView.textSize = 12f
-            textView.setPadding(8, 8, 8, 8)
+            textView.text = user.musicGenre[i]
+            textView.textSize = 16f
             textView.id = i
 
             val param: LinearLayout.LayoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-            param.marginStart = 8
-            param.marginEnd = 8
+            param.topMargin = 8
+            param.bottomMargin = 8
 
             textView.layoutParams = param
             binding.llMypageUserMusicGenreContainer.addView(textView)

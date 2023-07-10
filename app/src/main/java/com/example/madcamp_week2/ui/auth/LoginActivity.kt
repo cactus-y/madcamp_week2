@@ -38,7 +38,7 @@ class LoginActivity: AppCompatActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         pref = applicationContext.getSharedPreferences(getString(R.string.pref_key), Activity.MODE_PRIVATE)
         setContentView(binding.root)
-        val gso: GoogleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestIdToken(getString(com.example.madcamp_week2.R.string.server_client_id)).requestEmail().build()
+        val gso: GoogleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestIdToken(getString(R.string.server_client_id)).requestEmail().build()
         val gsc: GoogleSignInClient = GoogleSignIn.getClient(this, gso)
         binding.loginButton.setOnClickListener {
             signIn(gsc)
@@ -74,19 +74,19 @@ class LoginActivity: AppCompatActivity() {
             ) {
                 if (response.isSuccessful) {
                     val data: SocialLoginResponseBody? = response.body()
-                    println("email: " + data?.email)
-                    println("nickname: " + data?.nickname)
-                    println("profile image: " + data?.profileImage)
-                    println("token: " + data?.token)
                     if (data?.token == null) {
+                        Log.d("login activity", "$data")
                         val userEditActivity = Intent(applicationContext, UserEditActivity::class.java)
-                        userEditActivity.putExtra("email", data?.email);
-                        userEditActivity.putExtra("nickname", data?.nickname);
-                        userEditActivity.putExtra("profileImage", data?.profileImage);
+                        userEditActivity.putExtra("email", data?.user?.email)
+                        userEditActivity.putExtra("nickname", data?.user?.nickname)
+                        userEditActivity.putExtra("profileImage", data?.user?.profileImage)
                         startActivity(userEditActivity)
                         finish()
                     }
                     else {
+                        val editor = pref.edit()
+                        editor.putString(getString(R.string.token_key), data!!.token)
+                        editor.apply()
                         val mainActivity = Intent(applicationContext, MainActivity::class.java)
                         startActivity(mainActivity)
                         finish()
@@ -94,7 +94,7 @@ class LoginActivity: AppCompatActivity() {
                 }
             }
             override fun onFailure(call: Call<SocialLoginResponseBody>, t: Throwable) {
-                Toast.makeText(applicationContext, "로그인 실패", Toast.LENGTH_SHORT).show();
+                Toast.makeText(applicationContext, "로그인 실패", Toast.LENGTH_SHORT).show()
             }
         })
 
