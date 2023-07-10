@@ -1,5 +1,6 @@
 package com.example.madcamp_week2.ui.map
 
+import android.content.Intent
 import android.graphics.Color
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -65,7 +66,16 @@ class CardListAdapter(private var list: MutableList<KaraokeOrPost>): RecyclerVie
                 }
 
                 // if i already uploaded the post, cannot press the button
-                tv_map_new_post_button.setOnClickListener {  }
+                // do something here
+                tv_map_new_post_button.setOnClickListener {
+                    Intent(context, NewPostActivity::class.java).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        putExtra("karaokeName", karaoke.name)
+                        putExtra("karaokeAddr", karaoke.address)
+                        putExtra("karaokeRoadAddr", karaoke.roadAddress)
+                        putExtra("karaokePhone", karaoke.phoneNumber)
+                    }.run { context.startActivity(this) }
+                }
 
             } else {
                 // post info
