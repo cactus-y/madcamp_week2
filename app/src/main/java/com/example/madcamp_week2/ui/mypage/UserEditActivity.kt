@@ -7,7 +7,9 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
+import android.view.inputmethod.EditorInfo
 import android.widget.CheckBox
 import android.widget.LinearLayout
 import android.widget.Toast
@@ -23,10 +25,13 @@ import com.example.madcamp_week2.databinding.ActivityUserEditBinding
 import com.example.madcamp_week2.sample.genres
 import com.squareup.picasso.MemoryPolicy
 import com.squareup.picasso.Picasso
+import okhttp3.MediaType
 import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Response
+import java.io.File
 
 
 class UserEditActivity : AppCompatActivity() {
@@ -35,27 +40,46 @@ class UserEditActivity : AppCompatActivity() {
     private lateinit var editor: SharedPreferences.Editor
     private val isChecked = BooleanArray(genres.size)
     private val checkBoxList: ArrayList<CheckBox> = ArrayList()
+    private var file: File? = null
     private var gender: Boolean? = null
-    private val permission: String = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { Manifest.permission.READ_EXTERNAL_STORAGE } else { Manifest.permission.READ_MEDIA_IMAGES }
+    private val permission: String = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { Manifest.permission.READ_MEDIA_IMAGES } else { Manifest.permission.READ_EXTERNAL_STORAGE }
     private val permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
         if (isGranted) {
+            imagePicker.launch(Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI))
         } else {
             Toast.makeText(this, "권한을 받아오지 못했습니다.", Toast.LENGTH_SHORT).show()
         }
     }
-    private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-        if (uri != null) {
-            Picasso.get().load(uri).memoryPolicy(MemoryPolicy.NO_CACHE).placeholder(com.example.madcamp_week2.R.drawable.placeholder_image).into(binding.ivMypageUserEditProfileImage)
-            Log.d("PhotoPicker", "Selected URI: $uri")
-        } else {
-            Log.d("PhotoPicker", "No media selected")
+    private val imagePicker = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) {
+            if (it.resultCode == Activity.RESULT_OK) {
+                val data = it.data
+                val imgUri = data?.data
+                if (imgUri != null) {
+                    Log.d("Image Uri", "$imgUri")
+                    val projection = arrayOf(MediaStore.Images.Media.DATA)
+                    val cursor = contentResolver.query(imgUri, projection, null, null, null)
+                    if (cursor != null) {
+                        val columnIndex =
+                            cursor!!.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+                        cursor.moveToNext()
+                        val path = cursor.getString(columnIndex)
+                        Log.d("imagePicker", "$path")
+                        file = File(path)
+                        Log.d("imagePicker file", "$file")
+                        cursor.close()
+                    }
+                    Picasso.get().load(imgUri).memoryPolicy(MemoryPolicy.NO_CACHE)
+                        .placeholder(com.example.madcamp_week2.R.drawable.placeholder_image)
+                        .into(binding.ivMypageUserEditProfileImage)
+                }
+            }
         }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(com.example.madcamp_week2.R.layout.activity_user_edit)
-        initViews()
         pref = applicationContext.getSharedPreferences(getString(R.string.pref_key), Activity.MODE_PRIVATE);
         editor = pref.edit()
         binding = ActivityUserEditBinding.inflate(layoutInflater)
@@ -64,18 +88,36 @@ class UserEditActivity : AppCompatActivity() {
         val userName = intent.getStringExtra("nickname")
         val userEmail = intent.getStringExtra("email")
         val genreSize = intent.getIntExtra("genreSize", -1)
-
+        val initialGender = intent.getStringExtra("gender")
+        val profileImage = intent.getStringExtra("profileImage")
+        if (profileImage != null) {
+            Picasso.get().load(profileImage).memoryPolicy(MemoryPolicy.NO_CACHE)
+                .placeholder(com.example.madcamp_week2.R.drawable.placeholder_image)
+                .into(binding.ivMypageUserEditProfileImage)
+        }
+        if (initialGender == "male") {
+            gender = true
+            binding.radioButtonMale.isChecked = true
+        }
+        else if (initialGender == "female") {
+            gender = false
+            binding.radioButtonFemale.isChecked = false
+        }
         if (genreSize != -1) {
             for(i: Int in 0 until genreSize) {
                 isChecked[intent.getIntExtra(i.toString(), -1)] = true
             }
         }
 
-        binding.etMypageUserEditNickname.setText(userName)
+        binding.nicknameEditTextView.setText(userName)
+        binding.nicknameEditTextView.imeOptions = EditorInfo.IME_ACTION_DONE;
         binding.emailTextView.text = userEmail
-        // Picasso.get().load(profileImage).memoryPolicy(MemoryPolicy.NO_CACHE ).placeholder(com.example.madcamp_week2.R.drawable.placeholder_image).error(com.example.madcamp_week2.R.drawable.ic_user_default_profile_image).into(binding.ivMypageUserEditProfileImage)
         binding.ivMypageUserEditProfileImage.setOnClickListener {
-            pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            if (ContextCompat.checkSelfPermission(this@UserEditActivity, permission) == PackageManager.PERMISSION_GRANTED) {
+                imagePicker.launch(Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI))
+            } else {
+                permissionLauncher.launch(permission)
+            }
         }
         binding.radioGroupGender.setOnCheckedChangeListener { _, i ->
             when(i) {
@@ -100,7 +142,7 @@ class UserEditActivity : AppCompatActivity() {
 
 
         binding.saveButton.setOnClickListener {
-            if (binding.etMypageUserEditNickname.text.toString() == "") {
+            if (binding.nicknameEditTextView.text.toString() == "") {
                 Toast.makeText(applicationContext, "닉네임을 입력해주세요", Toast.LENGTH_SHORT).show()
             }
             else if (!binding.radioButtonFemale.isChecked && !binding.radioButtonMale.isChecked) {
@@ -118,12 +160,14 @@ class UserEditActivity : AppCompatActivity() {
                     Toast.makeText(applicationContext, "노래 장르를 최소 1개 이상 선택해주세요", Toast.LENGTH_SHORT).show()
                 }
                 else {
-                    val nickname = binding.etMypageUserEditNickname.text.toString()
+                    val nickname = binding.nicknameEditTextView.text.toString()
                     val jsonObject = JSONObject("{\"email\":\"${userEmail}\",\"nickname\":\"${nickname}\",\"gender\": ${gender},\"musicGenre\":${musicGenre}}").toString()
-                    // val filePart = MultipartBody.Part.createFormData("file", file.name, RequestBody.create(MediaType.parse("multipart/form-data"), file))
+                    val filePart = if (file == null) { null } else { MultipartBody.Part.createFormData("file", file!!.name, RequestBody.create(
+                        MediaType.parse("image/*"), file)) }
                     val dataPart = MultipartBody.Part.createFormData("data", jsonObject)
                     Log.d("data part", "$jsonObject")
-                    val call = APIObject.getUserService.createUser(data = dataPart, file = null)
+                    Log.d("file part", "$filePart")
+                    val call = APIObject.getUserService.createUser(data = dataPart, file = filePart)
                     call.enqueue(object: retrofit2.Callback<PostUserResponseBody> {
                         override fun onResponse(
                             call: Call<PostUserResponseBody>,
@@ -133,7 +177,6 @@ class UserEditActivity : AppCompatActivity() {
                             if (response.isSuccessful) {
                                 Log.d("success", "$data")
                                 editor.putString(getString(R.string.token_key), data!!.token)
-                                editor.putString(getString(R.string.user_nickname_key), data!!.user!!.nickname)
                                 editor.apply()
                                 startActivity(Intent(applicationContext, MainActivity::class.java))
                                 finish()
@@ -150,14 +193,6 @@ class UserEditActivity : AppCompatActivity() {
                     })
                 }
             }
-        }
-    }
-
-    private fun initViews() {
-        if (ContextCompat.checkSelfPermission(this@UserEditActivity, permission) == PackageManager.PERMISSION_GRANTED) {
-            Log.d("main activity", "permission accepted")
-        } else {
-            permissionLauncher.launch(permission)
         }
     }
 }

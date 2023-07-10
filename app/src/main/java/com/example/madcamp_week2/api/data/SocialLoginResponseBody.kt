@@ -7,10 +7,6 @@ data class SocialLoginResponseBody(
     val success: Boolean,
     @SerializedName("token")
     val token: String?,
-    @SerializedName("nickname")
-    val nickname: String,
-    @SerializedName("email")
-    val email: String,
-    @SerializedName("profileImage")
-    val profileImage: String
+    @SerializedName("user")
+    val user: User
 )
