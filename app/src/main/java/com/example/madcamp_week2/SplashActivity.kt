@@ -17,7 +17,7 @@ class SplashActivity : AppCompatActivity() {
         val pref: SharedPreferences = applicationContext.getSharedPreferences(getString(R.string.pref_key), Activity.MODE_PRIVATE);
         val token: String? = pref.getString(getString(R.string.token_key), "");
         println("token: $token");
-        val activityIntent: Intent = if (token != null || token == "") {
+        val activityIntent: Intent = if (token == "") {
             Intent(this, LoginActivity::class.java)
         } else {
             Intent(this, MainActivity::class.java)
