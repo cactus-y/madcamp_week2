@@ -11,14 +11,24 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
+import android.widget.PopupWindow
+import android.widget.RelativeLayout
+import android.widget.TextView
 import android.widget.Toast
+import android.widget.Toolbar
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.example.madcamp_week2.R
 import com.example.madcamp_week2.databinding.FragmentMapBinding
@@ -42,7 +52,6 @@ class MapFragment : Fragment() {
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
-
     private lateinit var markerEventListener: MarkerEventListener
     private lateinit var mapEventListener: MapEventListener
 
@@ -66,6 +75,29 @@ class MapFragment : Fragment() {
 //        }
 
         return root
+    }
+
+    private fun showPopupWindow() {
+        val inflater = LayoutInflater.from(requireContext())
+        val popupView = inflater.inflate(R.layout.map_notification_popup_window, null)
+
+        val rcv_map_request_list = popupView.findViewById<RecyclerView>(R.id.rcv_map_request_list)
+        val tv_map_request_empty_list = popupView.findViewById<TextView>(R.id.tv_map_request_empty_list)
+
+        // when the list is empty, rcv becomes invisible
+        if(true) {
+            rcv_map_request_list.visibility = View.GONE
+            tv_map_request_empty_list.visibility = View.VISIBLE
+        }
+
+        val popupWindow = PopupWindow(
+            popupView,
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            true
+        )
+
+        popupWindow.showAsDropDown(requireView())
     }
 
     private fun permissionCheck() {
@@ -101,6 +133,8 @@ class MapFragment : Fragment() {
             }
         } else {
             startTracking()
+
+
         }
     }
 
@@ -146,7 +180,6 @@ class MapFragment : Fragment() {
         binding.kakaoMapview.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff
 //        binding.flMap.addView(mapView)
     }
-
 
     override fun onResume() {
         super.onResume()
