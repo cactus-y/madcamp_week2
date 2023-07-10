@@ -1,12 +1,15 @@
 package com.example.madcamp_week2.ui.auth
 
+import android.app.Activity
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.example.madcamp_week2.MainActivity
+import com.example.madcamp_week2.R
 import com.example.madcamp_week2.api.APIObject
 import com.example.madcamp_week2.api.data.SocialLoginRequestBody
 import com.example.madcamp_week2.api.data.SocialLoginResponseBody
@@ -29,9 +32,11 @@ class LoginActivity: AppCompatActivity() {
             handleSignInResult(task)
         }
     }
+    private lateinit var pref: SharedPreferences
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
+        pref = applicationContext.getSharedPreferences(getString(R.string.pref_key), Activity.MODE_PRIVATE)
         setContentView(binding.root)
         val gso: GoogleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestIdToken(getString(com.example.madcamp_week2.R.string.server_client_id)).requestEmail().build()
         val gsc: GoogleSignInClient = GoogleSignIn.getClient(this, gso)

@@ -1,5 +1,6 @@
 package com.example.madcamp_week2.ui.mypage
 
+import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.SharedPreferences
@@ -10,11 +11,10 @@ import android.util.Log
 import android.widget.CheckBox
 import android.widget.LinearLayout
 import android.widget.Toast
-import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.example.madcamp_week2.MainActivity
 import com.example.madcamp_week2.R
 import com.example.madcamp_week2.api.APIObject
@@ -36,14 +36,13 @@ class UserEditActivity : AppCompatActivity() {
     private val isChecked = BooleanArray(genres.size)
     private val checkBoxList: ArrayList<CheckBox> = ArrayList()
     private var gender: Boolean? = null
-    private val permission: String = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) android.Manifest.permission.READ_EXTERNAL_STORAGE else android.Manifest.permission.READ_MEDIA_IMAGES
-    private var permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission(), ActivityResultCallback<Boolean> { result ->
-        if (result) {
+    private val permission: String = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { Manifest.permission.READ_EXTERNAL_STORAGE } else { Manifest.permission.READ_MEDIA_IMAGES }
+    private val permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+        if (isGranted) {
+        } else {
+            Toast.makeText(this, "권한을 받아오지 못했습니다.", Toast.LENGTH_SHORT).show()
         }
-        else {
-
-        }
-    })
+    }
     private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) {
             Picasso.get().load(uri).memoryPolicy(MemoryPolicy.NO_CACHE).placeholder(com.example.madcamp_week2.R.drawable.placeholder_image).into(binding.ivMypageUserEditProfileImage)
@@ -53,10 +52,10 @@ class UserEditActivity : AppCompatActivity() {
         }
     }
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(com.example.madcamp_week2.R.layout.activity_user_edit)
+        initViews()
         pref = applicationContext.getSharedPreferences(getString(R.string.pref_key), Activity.MODE_PRIVATE);
         editor = pref.edit()
         binding = ActivityUserEditBinding.inflate(layoutInflater)
@@ -75,7 +74,6 @@ class UserEditActivity : AppCompatActivity() {
         binding.etMypageUserEditNickname.setText(userName)
         binding.emailTextView.text = userEmail
         // Picasso.get().load(profileImage).memoryPolicy(MemoryPolicy.NO_CACHE ).placeholder(com.example.madcamp_week2.R.drawable.placeholder_image).error(com.example.madcamp_week2.R.drawable.ic_user_default_profile_image).into(binding.ivMypageUserEditProfileImage)
-        checkPermission();
         binding.ivMypageUserEditProfileImage.setOnClickListener {
             pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         }
@@ -155,11 +153,10 @@ class UserEditActivity : AppCompatActivity() {
         }
     }
 
-    private fun checkPermission() {
-        if (ActivityCompat.checkSelfPermission(applicationContext, permission) == PackageManager.PERMISSION_GRANTED) {
+    private fun initViews() {
+        if (ContextCompat.checkSelfPermission(this@UserEditActivity, permission) == PackageManager.PERMISSION_GRANTED) {
             Log.d("main activity", "permission accepted")
-        }
-        else {
+        } else {
             permissionLauncher.launch(permission)
         }
     }
