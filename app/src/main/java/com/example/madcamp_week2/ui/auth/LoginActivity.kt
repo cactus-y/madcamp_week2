@@ -11,8 +11,8 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.madcamp_week2.MainActivity
 import com.example.madcamp_week2.R
 import com.example.madcamp_week2.api.APIObject
-import com.example.madcamp_week2.api.data.SocialLoginRequestBody
-import com.example.madcamp_week2.api.data.SocialLoginResponseBody
+import com.example.madcamp_week2.api.data.login.SocialLoginRequestBody
+import com.example.madcamp_week2.api.data.login.SocialLoginResponseBody
 import com.example.madcamp_week2.databinding.ActivityLoginBinding
 import com.example.madcamp_week2.ui.mypage.UserEditActivity
 import com.google.android.gms.auth.api.signin.GoogleSignIn

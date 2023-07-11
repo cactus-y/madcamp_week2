@@ -5,47 +5,41 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.PopupWindow
-import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
-import android.widget.Toolbar
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.view.MenuProvider
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
+import com.auth0.android.jwt.JWT
 import com.example.madcamp_week2.R
 import com.example.madcamp_week2.api.APIObject
-import com.example.madcamp_week2.api.data.GetKaraokeListResponseBody
-import com.example.madcamp_week2.api.data.Karaoke
+import com.example.madcamp_week2.api.data.KaraokeOrBoard
+import com.example.madcamp_week2.api.data.board.Board
+import com.example.madcamp_week2.api.data.board.GetBoardListResponseBody
+import com.example.madcamp_week2.api.data.karaoke.GetKaraokeListResponseBody
+import com.example.madcamp_week2.api.data.karaoke.Karaoke
 import com.example.madcamp_week2.databinding.FragmentMapBinding
+import com.example.madcamp_week2.getUserToken
 import com.example.madcamp_week2.sample.KaraokeOrPost
-import com.example.madcamp_week2.sample.SampleKaraoke
-import com.example.madcamp_week2.sample.globalKaraokeList
 import com.example.madcamp_week2.sample.globalPostList
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.tabs.TabLayoutMediator
 import kotlinx.coroutines.runBlocking
 import net.daum.mf.map.api.MapPOIItem
 import net.daum.mf.map.api.MapPoint
 import net.daum.mf.map.api.MapView
-import net.daum.mf.map.api.MapView.GONE
 import net.daum.mf.map.api.MapView.MapViewEventListener
 import retrofit2.Call
 import retrofit2.Response
@@ -59,6 +53,10 @@ class MapFragment : Fragment() {
     // onDestroyView.
     private val binding get() = _binding!!
     private var karaokeList = ArrayList<Karaoke>()
+//    private var karaokeOrGuestList = ArrayList<KaraokeOrGuest>()
+
+    private lateinit var userToken: JWT
+
     private lateinit var markerEventListener: MarkerEventListener
     private lateinit var mapEventListener: MapEventListener
 
@@ -70,7 +68,8 @@ class MapFragment : Fragment() {
         _binding = FragmentMapBinding.inflate(inflater, container, false)
 //        _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_map, container, false)
         val root: View = binding.root
-        markerEventListener = MarkerEventListener(this, binding)
+        userToken = getUserToken(requireContext())
+        markerEventListener = MarkerEventListener(this, binding, karaokeList)
         mapEventListener = MapEventListener(this, binding)
 //        mapView = MapView(context)
 //
@@ -169,30 +168,16 @@ class MapFragment : Fragment() {
         binding.kakaoMapview.setPOIItemEventListener(markerEventListener)
         binding.kakaoMapview.setMapViewEventListener(mapEventListener)
 
-        runBlocking { callKaraokeListAPI(uLatitude.toString(), uLongitude.toString()) }
+        callKaraokeListAPI(uLatitude.toString(), uLongitude.toString())
 
-        println("\n\n\nkaraoke list count: ${karaokeList.size}\n\n\n")
-
-        karaokeList.forEach {
-            val marker = MapPOIItem()
-            val itemName = it.name + "/" + it.address + "/" + it.roadAddress + "/" + it.latitude + "/" + it.longitude + "/" + it.phone
-
-            println("\n\n\n${itemName}\n\n\n")
-
-            marker.itemName = itemName
-            marker.mapPoint = MapPoint.mapPointWithGeoCoord(it.latitude.toDouble(), it.longitude.toDouble())
-            marker.isShowCalloutBalloonOnTouch = false
-            marker.markerType = MapPOIItem.MarkerType.BluePin
-            marker.selectedMarkerType = MapPOIItem.MarkerType.RedPin
-            binding.kakaoMapview.addPOIItem(marker)
-        }
-
-//         sample karaokes
-//        globalKaraokeList.forEach {
+//        karaokeList.forEach {
 //            val marker = MapPOIItem()
-//            val itemName = it.name + "/" + it.address + "/" + it.roadAddress + "/" + it.latitude.toString() + "/" + it.longitude.toString() + "/" + it.phoneNumber
+//            val itemName = it.name + "/" + it.address + "/" + it.roadAddress + "/" + it.latitude + "/" + it.longitude + "/" + it.phone
+//
+//            println("\n\n\n${itemName}\n\n\n")
+//
 //            marker.itemName = itemName
-//            marker.mapPoint = MapPoint.mapPointWithGeoCoord(it.latitude, it.longitude)
+//            marker.mapPoint = MapPoint.mapPointWithGeoCoord(it.latitude.toDouble(), it.longitude.toDouble())
 //            marker.isShowCalloutBalloonOnTouch = false
 //            marker.markerType = MapPOIItem.MarkerType.BluePin
 //            marker.selectedMarkerType = MapPOIItem.MarkerType.RedPin
@@ -208,6 +193,7 @@ class MapFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        userToken = getUserToken(requireContext())
         if(checkLocationService()) {
             permissionCheck()
 //            stopTracking()
@@ -218,10 +204,10 @@ class MapFragment : Fragment() {
     }
 
 
-
     override fun onPause() {
         super.onPause()
         binding.kakaoMapview.removeAllPOIItems()
+        binding.vpMapCardviewContainer.visibility = View.GONE
         stopTracking()
 //        binding.flMap.removeAllViews()
     }
@@ -232,7 +218,9 @@ class MapFragment : Fragment() {
         _binding = null
     }
 
-    class MarkerEventListener(val fragment: MapFragment, val binding: FragmentMapBinding): MapView.POIItemEventListener {
+    class MarkerEventListener(val fragment: MapFragment, val binding: FragmentMapBinding, val karaokeList: ArrayList<Karaoke>): MapView.POIItemEventListener {
+
+
         override fun onPOIItemSelected(p0: MapView?, p1: MapPOIItem?) {
             val bottomNavigationView = fragment.requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
             bottomNavigationView.visibility = View.GONE
@@ -240,45 +228,61 @@ class MapFragment : Fragment() {
             binding.kakaoMapview.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff
             val temp = p1!!.itemName.split("/")
 
-            val karaokeName = temp[0]
-            val karaokeAddr = temp[1]
-            val karaokeRoadAddr = temp[2]
-            val karaokeLat = temp[3]
-            val karaokeLong = temp[4]
-            val karaokePhone = temp[5]
+            val karaokeObjectId = temp[0]
 
             // visibility setting
             binding.vpMapCardviewContainer.visibility = View.VISIBLE
 
             // make list here
-            val foundKaraoke = globalKaraokeList.find { it.latitude.toString() == karaokeLat && it.longitude.toString() == karaokeLong }
-            val karaokeOrPostList = ArrayList<KaraokeOrPost>()
-            karaokeOrPostList.add(KaraokeOrPost(foundKaraoke, null))
+            val foundKaraoke = karaokeList.find { it.karaokeObjectId == karaokeObjectId }
 
-            globalPostList.forEach {
-                if(foundKaraoke == it.karaoke)
-                    karaokeOrPostList.add(KaraokeOrPost(null, it))
-            }
 
-            // adapter here
-            binding.vpMapCardviewContainer.adapter = CardListAdapter(karaokeOrPostList)
-            binding.vpMapCardviewContainer.registerOnPageChangeCallback(object: ViewPager2.OnPageChangeCallback() {
-                override fun onPageScrolled(
-                    position: Int,
-                    positionOffset: Float,
-                    positionOffsetPixels: Int
+            val karaokeOrBoardList = ArrayList<KaraokeOrBoard>()
+            karaokeOrBoardList.add(KaraokeOrBoard(foundKaraoke, null))
+
+            val call = APIObject.getBoardService.getBoardList(karaokeObjectId)
+            call.enqueue(object: retrofit2.Callback<GetBoardListResponseBody> {
+                override fun onResponse(
+                    call: Call<GetBoardListResponseBody>,
+                    response: Response<GetBoardListResponseBody>
                 ) {
-                    super.onPageScrolled(position, positionOffset, positionOffsetPixels)
+                    if(response.isSuccessful) {
+                        val data: GetBoardListResponseBody? = response.body()
+                        data?.boardList?.forEach {
+                            karaokeOrBoardList.add(KaraokeOrBoard(null, it))
+                        }
+
+                        // adapter here
+                        binding.vpMapCardviewContainer.adapter = CardListAdapter(karaokeOrBoardList)
+                        binding.vpMapCardviewContainer.registerOnPageChangeCallback(object: ViewPager2.OnPageChangeCallback() {
+                            override fun onPageScrolled(
+                                position: Int,
+                                positionOffset: Float,
+                                positionOffsetPixels: Int
+                            ) {
+                                super.onPageScrolled(position, positionOffset, positionOffsetPixels)
+                            }
+
+                            override fun onPageSelected(position: Int) {
+                                super.onPageSelected(position)
+                            }
+
+                            override fun onPageScrollStateChanged(state: Int) {
+                                super.onPageScrollStateChanged(state)
+                            }
+                        })
+
+                    }
                 }
 
-                override fun onPageSelected(position: Int) {
-                    super.onPageSelected(position)
-                }
-
-                override fun onPageScrollStateChanged(state: Int) {
-                    super.onPageScrollStateChanged(state)
+                override fun onFailure(call: Call<GetBoardListResponseBody>, t: Throwable) {
+                    Log.d("Board list GET failed", "GET failed")
                 }
             })
+
+
+
+
 
 //            binding.cvMapKaraokeInfoContainer.visibility = View.VISIBLE
 //            binding.tvMapKaraokeName.text =
@@ -362,7 +366,7 @@ class MapFragment : Fragment() {
                         println("\n\n\nin api call: ${it.name}\n\n\n")
                         karaokeList.add(it)
                         val marker = MapPOIItem()
-                        val itemName = it.placeId + "/" + it.name + "/" + it.address + "/" + it.roadAddress + "/" + it.phone
+                        val itemName = it.karaokeObjectId + "/" + it.name + "/" + it.address + "/" + it.roadAddress + "/" + it.phone
 
                         println("\n\n\n${itemName}\n\n\n")
 

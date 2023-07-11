@@ -13,14 +13,13 @@ import android.view.inputmethod.EditorInfo
 import android.widget.CheckBox
 import android.widget.LinearLayout
 import android.widget.Toast
-import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.example.madcamp_week2.MainActivity
 import com.example.madcamp_week2.R
 import com.example.madcamp_week2.api.APIObject
-import com.example.madcamp_week2.api.data.PostUserResponseBody
+import com.example.madcamp_week2.api.data.user.PostUserResponseBody
 import com.example.madcamp_week2.databinding.ActivityUserEditBinding
 import com.example.madcamp_week2.sample.genres
 import com.squareup.picasso.MemoryPolicy

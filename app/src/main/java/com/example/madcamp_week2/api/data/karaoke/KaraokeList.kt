@@ -1,4 +1,4 @@
-package com.example.madcamp_week2.api.data
+package com.example.madcamp_week2.api.data.karaoke
 
 import com.google.gson.annotations.SerializedName
 

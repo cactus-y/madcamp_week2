@@ -4,7 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.util.Log
 import com.auth0.android.jwt.JWT
-import com.example.madcamp_week2.api.data.User
+import com.example.madcamp_week2.api.data.user.User
 
 fun getUserInfoFromToken(context: Context, ): User {
     val pref =
@@ -30,4 +30,10 @@ fun getUserInfoFromToken(context: Context, ): User {
         musicGenre = list,
         createdAt = null
     )
+}
+
+fun getUserToken(context: Context): JWT {
+    val pref =
+        context.getSharedPreferences(context.getString(R.string.pref_key), Activity.MODE_PRIVATE);
+    return JWT(pref.getString(context.getString(R.string.token_key), "")!!)
 }

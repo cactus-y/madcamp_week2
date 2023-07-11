@@ -1,11 +1,9 @@
-package com.example.madcamp_week2.api.data
+package com.example.madcamp_week2.api.data.karaoke
 
 import com.google.gson.annotations.SerializedName
-import java.util.Date
-
 data class Karaoke(
     @SerializedName("id")
-    val objectId: String,
+    val karaokeObjectId: String,
     @SerializedName("place_id")
     val placeId: String,
     @SerializedName("name")

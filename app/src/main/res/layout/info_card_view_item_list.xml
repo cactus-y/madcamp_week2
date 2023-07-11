@@ -18,45 +18,55 @@
             android:id="@+id/ll_map_karaoke_info_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="visible"
-            android:layout_marginBottom="4dp"
+            android:visibility="gone"
             android:orientation="vertical">
             <TextView
                 android:id="@+id/tv_map_karaoke_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:textSize="18sp"
+                android:layout_marginTop="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="@color/black" />
             <TextView
                 android:id="@+id/tv_map_karaoke_addr"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="2dp"
+                android:layout_marginTop="6dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:textColor="@color/black"/>
             <TextView
                 android:id="@+id/tv_map_karaoke_road_addr"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:layout_marginBottom="8dp"
+                android:layout_marginTop="6dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:textColor="@color/black"/>
             <TextView
                 android:id="@+id/tv_map_karaoke_phone"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="8dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
                 android:textSize="13sp"
-                android:textColor="@color/black"
-                />
+                android:textColor="@color/black" />
+            <TextView
+                android:id="@+id/tv_map_karaoke_distance"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:textSize="13sp"
+                android:textColor="@color/black" />
+
 
         </LinearLayout>
 
