@@ -5,7 +5,6 @@ import android.os.Bundle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.madcamp_week2.R
 import com.example.madcamp_week2.databinding.ActivityChatRoomBinding
-import com.example.madcamp_week2.sample.SampleChatMessage
 import com.example.madcamp_week2.sample.globalChatRoomList
 
 class ChatRoomActivity : AppCompatActivity() {

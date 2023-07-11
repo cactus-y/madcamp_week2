@@ -1,21 +1,18 @@
-package com.example.madcamp_week2.api.data.board
+package com.example.madcamp_week2.api.data.guest
 
+import com.example.madcamp_week2.api.data.karaoke.Karaoke
 import com.example.madcamp_week2.api.data.user.User
 import com.google.gson.annotations.SerializedName
 
-data class Board(
+data class MyGuest(
     @SerializedName("id")
     val boardObjectId: String,
     @SerializedName("deadline")
     val deadLine: String,
     @SerializedName("content")
     val comment: String,
-    @SerializedName("karaokeId")
-    val karaokeObjectId: String,
-    @SerializedName("togetherCount")
-    val guestCount: Int,
+    @SerializedName("karaoke")
+    val karaoke: Karaoke,
     @SerializedName("author")
-    val author: User,
-    @SerializedName("guestList")
-    val guestList: List<User>
+    val author: User
 )

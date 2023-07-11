@@ -13,36 +13,31 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
-import android.widget.PopupWindow
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.auth0.android.jwt.JWT
 import com.example.madcamp_week2.R
 import com.example.madcamp_week2.api.APIObject
 import com.example.madcamp_week2.api.data.KaraokeOrBoard
-import com.example.madcamp_week2.api.data.board.Board
 import com.example.madcamp_week2.api.data.board.GetBoardListResponseBody
 import com.example.madcamp_week2.api.data.karaoke.GetKaraokeListResponseBody
 import com.example.madcamp_week2.api.data.karaoke.Karaoke
 import com.example.madcamp_week2.databinding.FragmentMapBinding
 import com.example.madcamp_week2.getUserToken
-import com.example.madcamp_week2.sample.KaraokeOrPost
-import com.example.madcamp_week2.sample.globalPostList
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import kotlinx.coroutines.runBlocking
 import net.daum.mf.map.api.MapPOIItem
 import net.daum.mf.map.api.MapPoint
 import net.daum.mf.map.api.MapView
 import net.daum.mf.map.api.MapView.MapViewEventListener
 import retrofit2.Call
 import retrofit2.Response
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 class MapFragment : Fragment() {
 
@@ -66,44 +61,12 @@ class MapFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentMapBinding.inflate(inflater, container, false)
-//        _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_map, container, false)
         val root: View = binding.root
         userToken = getUserToken(requireContext())
         markerEventListener = MarkerEventListener(this, binding, karaokeList)
         mapEventListener = MapEventListener(this, binding)
-//        mapView = MapView(context)
-//
-//        if(checkLocationService()) {
-//            permissionCheck()
-//            stopTracking()
-//        } else {
-//            Toast.makeText(context, "GPS를 켜주세요", Toast.LENGTH_SHORT).show()
-//        }
 
         return root
-    }
-
-    private fun showPopupWindow() {
-        val inflater = LayoutInflater.from(requireContext())
-        val popupView = inflater.inflate(R.layout.map_notification_popup_window, null)
-
-        val rcv_map_request_list = popupView.findViewById<RecyclerView>(R.id.rcv_map_request_list)
-        val tv_map_request_empty_list = popupView.findViewById<TextView>(R.id.tv_map_request_empty_list)
-
-        // when the list is empty, rcv becomes invisible
-        if(true) {
-            rcv_map_request_list.visibility = View.GONE
-            tv_map_request_empty_list.visibility = View.VISIBLE
-        }
-
-        val popupWindow = PopupWindow(
-            popupView,
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            true
-        )
-
-        popupWindow.showAsDropDown(requireView())
     }
 
     private fun permissionCheck() {
@@ -170,20 +133,6 @@ class MapFragment : Fragment() {
 
         callKaraokeListAPI(uLatitude.toString(), uLongitude.toString())
 
-//        karaokeList.forEach {
-//            val marker = MapPOIItem()
-//            val itemName = it.name + "/" + it.address + "/" + it.roadAddress + "/" + it.latitude + "/" + it.longitude + "/" + it.phone
-//
-//            println("\n\n\n${itemName}\n\n\n")
-//
-//            marker.itemName = itemName
-//            marker.mapPoint = MapPoint.mapPointWithGeoCoord(it.latitude.toDouble(), it.longitude.toDouble())
-//            marker.isShowCalloutBalloonOnTouch = false
-//            marker.markerType = MapPOIItem.MarkerType.BluePin
-//            marker.selectedMarkerType = MapPOIItem.MarkerType.RedPin
-//            binding.kakaoMapview.addPOIItem(marker)
-//        }
-
     }
 
     private fun stopTracking() {
@@ -249,7 +198,15 @@ class MapFragment : Fragment() {
                     if(response.isSuccessful) {
                         val data: GetBoardListResponseBody? = response.body()
                         data?.boardList?.forEach {
-                            karaokeOrBoardList.add(KaraokeOrBoard(null, it))
+                            val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+                            val currentDate = Calendar.getInstance().time
+
+                            val deadLineDate = dateFormat.parse(it.deadLine)
+
+                            // if current date is after the deadline
+                            // set text color as gray
+                            if(!currentDate.after(deadLineDate))
+                                karaokeOrBoardList.add(KaraokeOrBoard(null, it))
                         }
 
                         // adapter here
@@ -280,21 +237,6 @@ class MapFragment : Fragment() {
                 }
             })
 
-
-
-
-
-//            binding.cvMapKaraokeInfoContainer.visibility = View.VISIBLE
-//            binding.tvMapKaraokeName.text =
-//            binding.tvMapKaraokeAddr.text = temp[1]
-//            binding.tvMapKaraokeRoadAddr.text = temp[2]
-//            if(temp[5] == "") {
-//                binding.tvMapKaraokePhone.text = "전화번호가 없어요!"
-//                binding.tvMapKaraokePhone.setTextColor(Color.parseColor("#D3D3D3"))
-//            } else {
-//                binding.tvMapKaraokePhone.text = temp[5]
-//                binding.tvMapKaraokePhone.setTextColor(Color.parseColor("#000000"))
-//            }
         }
 
         override fun onCalloutBalloonOfPOIItemTouched(p0: MapView?, p1: MapPOIItem?) {

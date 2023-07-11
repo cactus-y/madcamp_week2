@@ -4,13 +4,13 @@ import com.google.gson.annotations.SerializedName
 data class Karaoke(
     @SerializedName("id")
     val karaokeObjectId: String,
-    @SerializedName("place_id")
+    @SerializedName("placeId")
     val placeId: String,
     @SerializedName("name")
     val name: String,
     @SerializedName("address")
     val address: String,
-    @SerializedName("road_address")
+    @SerializedName("roadAddress")
     val roadAddress: String,
     @SerializedName("phone")
     val phone: String?,
