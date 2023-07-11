@@ -1,7 +1,7 @@
 package com.example.madcamp_week2.api.service
 
-import com.example.madcamp_week2.api.data.SocialLoginRequestBody
-import com.example.madcamp_week2.api.data.SocialLoginResponseBody
+import com.example.madcamp_week2.api.data.login.SocialLoginRequestBody
+import com.example.madcamp_week2.api.data.login.SocialLoginResponseBody
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.Headers

@@ -1,7 +1,6 @@
 package com.example.madcamp_week2.api.service
 
-import android.graphics.PostProcessor
-import com.example.madcamp_week2.api.data.PostUserResponseBody
+import com.example.madcamp_week2.api.data.user.PostUserResponseBody
 import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.http.Multipart
