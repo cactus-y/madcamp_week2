@@ -31,6 +31,9 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.example.madcamp_week2.R
+import com.example.madcamp_week2.api.APIObject
+import com.example.madcamp_week2.api.data.GetKaraokeListResponseBody
+import com.example.madcamp_week2.api.data.Karaoke
 import com.example.madcamp_week2.databinding.FragmentMapBinding
 import com.example.madcamp_week2.sample.KaraokeOrPost
 import com.example.madcamp_week2.sample.SampleKaraoke
@@ -38,11 +41,14 @@ import com.example.madcamp_week2.sample.globalKaraokeList
 import com.example.madcamp_week2.sample.globalPostList
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.tabs.TabLayoutMediator
+import kotlinx.coroutines.runBlocking
 import net.daum.mf.map.api.MapPOIItem
 import net.daum.mf.map.api.MapPoint
 import net.daum.mf.map.api.MapView
 import net.daum.mf.map.api.MapView.GONE
 import net.daum.mf.map.api.MapView.MapViewEventListener
+import retrofit2.Call
+import retrofit2.Response
 
 class MapFragment : Fragment() {
 
@@ -52,6 +58,7 @@ class MapFragment : Fragment() {
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
+    private var karaokeList = ArrayList<Karaoke>()
     private lateinit var markerEventListener: MarkerEventListener
     private lateinit var mapEventListener: MapEventListener
 
@@ -162,17 +169,35 @@ class MapFragment : Fragment() {
         binding.kakaoMapview.setPOIItemEventListener(markerEventListener)
         binding.kakaoMapview.setMapViewEventListener(mapEventListener)
 
-        // sample karaokes
-        globalKaraokeList.forEach {
+        runBlocking { callKaraokeListAPI(uLatitude.toString(), uLongitude.toString()) }
+
+        println("\n\n\nkaraoke list count: ${karaokeList.size}\n\n\n")
+
+        karaokeList.forEach {
             val marker = MapPOIItem()
-            val itemName = it.name + "/" + it.address + "/" + it.roadAddress + "/" + it.latitude.toString() + "/" + it.longitude.toString() + "/" + it.phoneNumber
+            val itemName = it.name + "/" + it.address + "/" + it.roadAddress + "/" + it.latitude + "/" + it.longitude + "/" + it.phone
+
+            println("\n\n\n${itemName}\n\n\n")
+
             marker.itemName = itemName
-            marker.mapPoint = MapPoint.mapPointWithGeoCoord(it.latitude, it.longitude)
+            marker.mapPoint = MapPoint.mapPointWithGeoCoord(it.latitude.toDouble(), it.longitude.toDouble())
             marker.isShowCalloutBalloonOnTouch = false
             marker.markerType = MapPOIItem.MarkerType.BluePin
             marker.selectedMarkerType = MapPOIItem.MarkerType.RedPin
             binding.kakaoMapview.addPOIItem(marker)
         }
+
+//         sample karaokes
+//        globalKaraokeList.forEach {
+//            val marker = MapPOIItem()
+//            val itemName = it.name + "/" + it.address + "/" + it.roadAddress + "/" + it.latitude.toString() + "/" + it.longitude.toString() + "/" + it.phoneNumber
+//            marker.itemName = itemName
+//            marker.mapPoint = MapPoint.mapPointWithGeoCoord(it.latitude, it.longitude)
+//            marker.isShowCalloutBalloonOnTouch = false
+//            marker.markerType = MapPOIItem.MarkerType.BluePin
+//            marker.selectedMarkerType = MapPOIItem.MarkerType.RedPin
+//            binding.kakaoMapview.addPOIItem(marker)
+//        }
 
     }
 
@@ -196,6 +221,7 @@ class MapFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
+        binding.kakaoMapview.removeAllPOIItems()
         stopTracking()
 //        binding.flMap.removeAllViews()
     }
@@ -314,6 +340,46 @@ class MapFragment : Fragment() {
         override fun onMapViewMoveFinished(p0: MapView?, p1: MapPoint?) {
         }
 
+    }
+
+    private fun callKaraokeListAPI(latitude: String, longitude: String) {
+        // whenever this method is called, karaoke list will grow infinitely
+        // clear karaoke list
+        karaokeList.clear()
+
+        // radius is 1 km
+        val call = APIObject.getKaraokeService.getKaraokeList(1000, longitude, latitude)
+        call.enqueue(object: retrofit2.Callback<GetKaraokeListResponseBody> {
+            override fun onResponse(
+                call: Call<GetKaraokeListResponseBody>,
+                response: Response<GetKaraokeListResponseBody>
+            ) {
+                if(response.isSuccessful) {
+                    println("\n\n\nSuccessful\n\n\n")
+                    val data: GetKaraokeListResponseBody? = response.body()
+                    println("\n\n\n${data?.karaokeListData?.count}\n\n\n")
+                    data?.karaokeListData?.karaokeList?.forEach {
+                        println("\n\n\nin api call: ${it.name}\n\n\n")
+                        karaokeList.add(it)
+                        val marker = MapPOIItem()
+                        val itemName = it.placeId + "/" + it.name + "/" + it.address + "/" + it.roadAddress + "/" + it.phone
+
+                        println("\n\n\n${itemName}\n\n\n")
+
+                        marker.itemName = itemName
+                        marker.mapPoint = MapPoint.mapPointWithGeoCoord(it.latitude.toDouble(), it.longitude.toDouble())
+                        marker.isShowCalloutBalloonOnTouch = false
+                        marker.markerType = MapPOIItem.MarkerType.BluePin
+                        marker.selectedMarkerType = MapPOIItem.MarkerType.RedPin
+                        binding.kakaoMapview.addPOIItem(marker)
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<GetKaraokeListResponseBody>, t: Throwable) {
+                Toast.makeText(context, "노래방 검색 실패", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
 }
