@@ -4,8 +4,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.madcamp_week2.R
 import com.example.madcamp_week2.databinding.FragmentChatBinding
@@ -33,8 +35,13 @@ class ChatFragment : Fragment() {
         val root: View = binding.root
 
         binding.rcvChatList.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
-        binding.rcvChatList.adapter = ChatListAdapter(globalChatRoomList)
+        val decoCount = binding.rcvChatList.itemDecorationCount
+        if(decoCount != 0) {
+            binding.rcvChatList.removeItemDecorationAt(decoCount - 1)
+        }
+        binding.rcvChatList.addItemDecoration(DividerItemDecoration(context, LinearLayout.VERTICAL))
 
+        binding.rcvChatList.adapter = ChatListAdapter(globalChatRoomList)
         return root
     }
 
