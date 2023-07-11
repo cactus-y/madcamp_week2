@@ -21,7 +21,6 @@ import com.example.madcamp_week2.R
 import com.example.madcamp_week2.api.APIObject
 import com.example.madcamp_week2.api.data.user.PostUserResponseBody
 import com.example.madcamp_week2.databinding.ActivityUserEditBinding
-import com.example.madcamp_week2.sample.genres
 import com.squareup.picasso.MemoryPolicy
 import com.squareup.picasso.Picasso
 import okhttp3.MediaType
@@ -37,6 +36,7 @@ class UserEditActivity : AppCompatActivity() {
     private lateinit var binding: ActivityUserEditBinding
     private lateinit var pref: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
+    val genres = arrayListOf("발라드", "댄스", "랩/힙합", "R&B", "인디음악", "록/메탈", "트로트", "POP", "JPOP")
     private val isChecked = BooleanArray(genres.size)
     private val checkBoxList: ArrayList<CheckBox> = ArrayList()
     private var file: File? = null

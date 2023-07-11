@@ -1,23 +1,30 @@
 package com.example.madcamp_week2.ui.mypage
 
-import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.madcamp_week2.R
+import com.example.madcamp_week2.api.APIObject
+import com.example.madcamp_week2.api.data.board.GetMyBoardListResponseBody
+import com.example.madcamp_week2.api.data.board.MyBoard
+import com.example.madcamp_week2.api.data.guest.GetMyGusetListResponseBody
+import com.example.madcamp_week2.api.data.guest.MyGuest
 import com.example.madcamp_week2.databinding.FragmentMypageBinding
 import com.example.madcamp_week2.getUserInfoFromToken
-import com.example.madcamp_week2.sample.genres
-import com.example.madcamp_week2.sample.karaoke1
-import com.example.madcamp_week2.sample.karaoke2
-import com.example.madcamp_week2.sample.karaoke3
+import com.example.madcamp_week2.getUserToken
 import com.squareup.picasso.MemoryPolicy
 import com.squareup.picasso.Picasso
+import retrofit2.Call
+import retrofit2.Response
 
 
 class MyPageFragment : Fragment() {
@@ -34,58 +41,128 @@ class MyPageFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         val user = getUserInfoFromToken(requireContext())
+        val userToken = "Bearer ${getUserToken(requireContext())}"
         Log.d("JWT user", "$user")
         _binding = FragmentMypageBinding.inflate(inflater, container, false)
-//        _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_mypage, container, false)
         val root: View = binding.root
 
 //        binding.tvMypageUserEditButton.setOnClickListener {
 //            Intent(
 //                context,
 //                UserEditActivity::class.java
-//            ).apply {
-////                putExtra("profileImageUri", "")
-//                putExtra("nickname", user.nickname)
-//                putExtra("email", user.email)
-//                putExtra("genreSize", user.musicGenre.size)
-//                putExtra("gender", if (user.gender) "female" else "male")
-//                putExtra("profileImage", user.profileImage)
-//
-//                for(i: Int in 0 until user.musicGenre.size) {
-//                    for(j: Int in 0 until genres.size)  {
-//                        if (genres[j] == user.musicGenre[i]) {
-//                            putExtra(i.toString(), j)
-//                        }
-//                    }
-//                }
-//
-//            }.run { requireContext().startActivity(this) }
+//            ).run { requireContext().startActivity(this) }
 //        }
 
-        binding.nicknameTextView.text = user.nickname
-        binding.userEmailTextView.text = user.email
+        binding.tvMypageMyNickname.text = user.nickname
+        binding.tvMypageMyEmail.text = user.email
         if (user.profileImage != null) {
             Picasso.get().load(user.profileImage).memoryPolicy(MemoryPolicy.NO_CACHE)
                 .placeholder(com.example.madcamp_week2.R.drawable.placeholder_image)
                 .into(binding.ivMypageUserEditProfileImage)
         }
 
+        // genre dynamic textview here
         for(i: Int in 0 until user.musicGenre.size) {
             val textView = TextView(context)
             textView.text = user.musicGenre[i]
-            textView.textSize = 16f
+            textView.setTextColor(Color.parseColor("#E45477"))
+            textView.textSize = 10f
+            textView.setPadding(8, 8, 8, 8)
+            textView.gravity = Gravity.CENTER
+            textView.setBackgroundResource(R.drawable.background_circular_dynamic)
             textView.id = i
 
             val param: LinearLayout.LayoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-            param.topMargin = 8
-            param.bottomMargin = 8
+            param.marginStart = 8
+            param.marginEnd = 8
+            param.topMargin = 4
+            param.bottomMargin = 4
 
             textView.layoutParams = param
-            binding.llMypageUserMusicGenreContainer.addView(textView)
+
+            if(i > 5) {
+                binding.llMypageMyGenreContainer2.visibility = View.VISIBLE
+                binding.llMypageMyGenreContainer2.addView(textView)
+            } else {
+                binding.llMypageMyGenreContainer1.addView(textView)
+            }
         }
 
-        binding.rcvMypageHistoryList.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
-        binding.rcvMypageHistoryList.adapter = KaraokeHistoryListAdapter(arrayListOf(karaoke1, karaoke2, karaoke3, karaoke1, karaoke2, karaoke3))
+        val tempView1 = View(context)
+        val tempParam: LinearLayout.LayoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT)
+        tempParam.weight = 1f
+        tempView1.layoutParams = tempParam
+        binding.llMypageMyGenreContainer1.addView(tempView1)
+        if(binding.llMypageMyGenreContainer2.visibility == View.VISIBLE) {
+            val tempView2 = View(context)
+            val tempParam: LinearLayout.LayoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT)
+            tempParam.weight = 1f
+            tempView2.layoutParams = tempParam
+            binding.llMypageMyGenreContainer2.addView(tempView2)
+        }
+
+        // my board list recycler view
+        val callBoardList = APIObject.getMyPageService.getMyBoardList(userToken)
+        callBoardList.enqueue(object: retrofit2.Callback<GetMyBoardListResponseBody> {
+            override fun onResponse(
+                call: Call<GetMyBoardListResponseBody>,
+                response: Response<GetMyBoardListResponseBody>
+            ) {
+                if(response.isSuccessful) {
+                    val list = ArrayList<MyBoard>()
+                    val data: GetMyBoardListResponseBody? = response.body()
+
+                    data?.boardList?.forEach {
+                        list.add(it)
+                    }
+
+                    // sort the list
+                    list.sortByDescending { it.deadLine }
+
+                    binding.rcvMypageMyBoardList.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+                    binding.rcvMypageMyBoardList.adapter = MyBoardListAdapter(list)
+                } else {
+                    Toast.makeText(context, "에러!", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<GetMyBoardListResponseBody>, t: Throwable) {
+                Toast.makeText(context, "에러!", Toast.LENGTH_SHORT).show()
+            }
+        })
+
+
+
+        // guest board list recycler view
+        val callGuestList = APIObject.getMyPageService.getMyGuestList(userToken)
+        callGuestList.enqueue(object: retrofit2.Callback<GetMyGusetListResponseBody> {
+            override fun onResponse(
+                call: Call<GetMyGusetListResponseBody>,
+                response: Response<GetMyGusetListResponseBody>
+            ) {
+                if(response.isSuccessful) {
+                    val list = ArrayList<MyGuest>()
+                    val data: GetMyGusetListResponseBody? = response.body()
+
+                    data?.boardList?.forEach {
+                        list.add(it)
+                    }
+
+                    // sort the list
+                    list.sortByDescending { it.deadLine }
+
+                    binding.rcvMypageGuestBoardList.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+                    binding.rcvMypageGuestBoardList.adapter = GuestBoardListAdapter(list)
+                } else {
+                    Toast.makeText(context, "에러!", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<GetMyGusetListResponseBody>, t: Throwable) {
+                Toast.makeText(context, "에러!", Toast.LENGTH_SHORT).show()
+            }
+        })
+
 
         return root
     }
