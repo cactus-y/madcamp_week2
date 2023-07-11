@@ -1,8 +1,6 @@
 package com.example.madcamp_week2.ui.chat
 
-import android.opengl.Visibility
 import android.os.Build
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,12 +9,13 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
+import com.example.madcamp_week2.api.data.ChatMessage
 import com.example.madcamp_week2.R
-import com.example.madcamp_week2.sample.SampleChatMessage
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
+import com.example.madcamp_week2.api.data.User
+import java.text.SimpleDateFormat
+import java.util.Date
 
-class ChatMessageListAdapter(private var list: MutableList<SampleChatMessage>): RecyclerView.Adapter<ChatMessageListAdapter.ListItemViewHolder>() {
+class ChatMessageListAdapter(private var list: MutableList<ChatMessage>, private var user: User): RecyclerView.Adapter<ChatMessageListAdapter.ListItemViewHolder>() {
     inner class ListItemViewHolder(itemView: View?): RecyclerView.ViewHolder(itemView!!) {
         private val context = itemView!!.context
 
@@ -29,7 +28,7 @@ class ChatMessageListAdapter(private var list: MutableList<SampleChatMessage>): 
         var view_put_msg_to_right:View = itemView!!.findViewById(R.id.view_put_msg_to_right)
 
         @RequiresApi(Build.VERSION_CODES.O)
-        fun bind(item: SampleChatMessage, position: Int) {
+        fun bind(item: ChatMessage, position: Int) {
 //            val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd hh:mm:ss")
 //            val date = LocalDateTime.parse(item.timestamp, formatter)
 
@@ -37,11 +36,11 @@ class ChatMessageListAdapter(private var list: MutableList<SampleChatMessage>): 
             tv_chat_msg_content.text = item.msg
 
             // stick to right or left
-            if(item.Sender.name != "Test01") {
+            if(item.senderName != user.nickname) {
                 if(position == 0) {
                     iv_chat_msg_user_profile_image.visibility = View.VISIBLE
                 } else {
-                    if(list[position - 1].Sender.name == item.Sender.name) {
+                    if(list[position - 1].senderName == item.senderName) {
                         iv_chat_msg_user_profile_image.visibility = View.INVISIBLE
                     } else {
                         iv_chat_msg_user_profile_image.visibility = View.VISIBLE
@@ -81,5 +80,14 @@ class ChatMessageListAdapter(private var list: MutableList<SampleChatMessage>): 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onBindViewHolder(holder: ListItemViewHolder, position: Int) {
         holder.bind(list[position], position)
+    }
+
+    fun addItem(item: ChatMessage) {
+        list.add(item)
+    }
+
+    // System.currentTimeMillis를 몇시:몇분 am/pm 형태의 문자열로 반환
+    private fun toDate(currentMiliis: Long): String? {
+        return SimpleDateFormat("hh:mm a").format(Date(currentMiliis))
     }
 }

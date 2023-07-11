@@ -1,6 +1,5 @@
 package com.example.madcamp_week2.ui.mypage
 
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -11,8 +10,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.madcamp_week2.databinding.FragmentMypageBinding
-import com.example.madcamp_week2.getUserInfoFromToken
-import com.example.madcamp_week2.sample.genres
+import com.example.madcamp_week2.util.getUserInfoFromToken
 import com.example.madcamp_week2.sample.karaoke1
 import com.example.madcamp_week2.sample.karaoke2
 import com.example.madcamp_week2.sample.karaoke3

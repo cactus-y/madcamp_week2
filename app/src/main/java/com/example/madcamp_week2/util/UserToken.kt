@@ -1,11 +1,17 @@
-package com.example.madcamp_week2
+package com.example.madcamp_week2.util
 
 import android.app.Activity
 import android.content.Context
 import android.util.Log
 import com.auth0.android.jwt.JWT
+import com.example.madcamp_week2.R
 import com.example.madcamp_week2.api.data.User
 
+fun getUserToken(context: Context): String {
+    val pref =
+        context.getSharedPreferences(context.getString(R.string.pref_key), Activity.MODE_PRIVATE)
+    return pref.getString(context.getString(R.string.token_key), "")!!
+}
 fun getUserInfoFromToken(context: Context, ): User {
     val pref =
         context.getSharedPreferences(context.getString(R.string.pref_key), Activity.MODE_PRIVATE);

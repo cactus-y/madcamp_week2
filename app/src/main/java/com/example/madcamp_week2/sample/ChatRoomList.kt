@@ -28,4 +28,4 @@ var chatRoom2 =  SampleChatRoom(user4, arrayListOf(
     )
 )
 
-var globalChatRoomList = arrayListOf(chatRoom1, chatRoom2)
+var globalChatRoomList = arrayListOf(chatRoom1)

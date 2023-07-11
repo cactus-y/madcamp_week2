@@ -1,5 +1,6 @@
 package com.example.madcamp_week2.api
 
+import com.example.madcamp_week2.api.service.DeviceTokenService
 import com.example.madcamp_week2.api.service.SocialLoginService
 import com.example.madcamp_week2.api.service.UserService
 import okhttp3.OkHttpClient
@@ -19,4 +20,5 @@ object APIObject {
 
     val getSocialLoginService : SocialLoginService by lazy { getRetrofit.create(SocialLoginService::class.java)}
     val getUserService: UserService by lazy { getRetrofit.create(UserService::class.java) }
+    val getDeviceTokenService: DeviceTokenService by lazy { getRetrofit.create(DeviceTokenService::class.java) }
 }
