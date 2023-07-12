@@ -10,6 +10,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.madcamp_week2.R
 import com.example.madcamp_week2.db.ChatRoom
 import com.example.madcamp_week2.sample.SampleChatRoom
+import com.squareup.picasso.MemoryPolicy
+import com.squareup.picasso.Picasso
 
 class ChatListAdapter(private var list: MutableList<ChatRoom>): RecyclerView.Adapter<ChatListAdapter.ListItemViewHolder>() {
     inner class ListItemViewHolder(itemView: View?): RecyclerView.ViewHolder(itemView!!) {
@@ -35,7 +37,11 @@ class ChatListAdapter(private var list: MutableList<ChatRoom>): RecyclerView.Ada
                 }.run { context.startActivity(this) }
             }
 
-
+            if (item.otherProfileImage != null && item.otherProfileImage != "") {
+                Picasso.get().load(item.otherProfileImage).memoryPolicy(MemoryPolicy.NO_CACHE)
+                    .placeholder(com.example.madcamp_week2.R.drawable.placeholder_image)
+                    .into(iv_chat_user_profile_image)
+            }
         }
     }
 

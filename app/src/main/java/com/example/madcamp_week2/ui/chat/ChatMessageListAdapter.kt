@@ -12,6 +12,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.madcamp_week2.api.data.ChatMessage
 import com.example.madcamp_week2.R
 import com.example.madcamp_week2.api.data.user.User
+import com.squareup.picasso.MemoryPolicy
+import com.squareup.picasso.Picasso
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -53,6 +55,11 @@ class ChatMessageListAdapter(private var list: MutableList<ChatMessage>, private
 //                ll_chat_img_and_msg_container.gravity = Gravity.END
                 iv_chat_msg_user_profile_image.visibility = View.GONE
                 view_put_msg_to_right.visibility = View.VISIBLE
+            }
+            if (item.senderProfileImage != null && item.senderProfileImage != "") {
+                Picasso.get().load(item.senderProfileImage).memoryPolicy(MemoryPolicy.NO_CACHE)
+                    .placeholder(com.example.madcamp_week2.R.drawable.placeholder_image)
+                    .into(iv_chat_msg_user_profile_image)
             }
 
             // show new date
