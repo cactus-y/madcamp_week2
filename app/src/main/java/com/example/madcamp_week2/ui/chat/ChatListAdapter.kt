@@ -8,9 +8,10 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.madcamp_week2.R
+import com.example.madcamp_week2.db.ChatRoom
 import com.example.madcamp_week2.sample.SampleChatRoom
 
-class ChatListAdapter(private var list: MutableList<SampleChatRoom>): RecyclerView.Adapter<ChatListAdapter.ListItemViewHolder>() {
+class ChatListAdapter(private var list: MutableList<ChatRoom>): RecyclerView.Adapter<ChatListAdapter.ListItemViewHolder>() {
     inner class ListItemViewHolder(itemView: View?): RecyclerView.ViewHolder(itemView!!) {
         private val context = itemView!!.context
 
@@ -18,14 +19,19 @@ class ChatListAdapter(private var list: MutableList<SampleChatRoom>): RecyclerVi
         var tv_chat_user_name: TextView = itemView!!.findViewById(R.id.tv_chat_user_name)
         var tv_chat_user_last_chat: TextView = itemView!!.findViewById(R.id.tv_chat_user_last_chat)
 
-        fun bind(item: SampleChatRoom, position: Int) {
-            tv_chat_user_name.text = item.otherUser.name
-            tv_chat_user_last_chat.text = item.chatlog[item.chatlog.size - 1].msg
+        fun bind(item: ChatRoom, position: Int) {
+            tv_chat_user_name.text = item.otherUsername
+            tv_chat_user_last_chat.text = item.latestMessage
 
             itemView.setOnClickListener {
                 Intent(context, ChatRoomActivity::class.java).apply {
                     // putExtra
-                    putExtra("chatRoomIndex", position)
+                    putExtra("otherId", item.otherId)
+                    putExtra("otherUsername", item.otherUsername)
+                    putExtra("roomNumber", item.roomNumber)
+                    if (item.otherProfileImage != null) {
+                        putExtra("otherProfileImage", item.otherProfileImage)
+                    }
                 }.run { context.startActivity(this) }
             }
 
@@ -44,5 +50,23 @@ class ChatListAdapter(private var list: MutableList<SampleChatRoom>): RecyclerVi
 
     override fun onBindViewHolder(holder: ListItemViewHolder, position: Int) {
         holder.bind(list[position], position)
+    }
+
+    fun addChatRoom(item: ChatRoom) {
+        list.add(item)
+    }
+    fun setChatRoomList(list: MutableList<ChatRoom>) {
+        list.clear()
+        list.addAll(list)
+    }
+
+    fun updateLatestMessage(roomNumber: String, message: String): Int {
+        for (i: Int in list.indices) {
+            if (list[i].roomNumber == roomNumber) {
+                list[i].latestMessage = message
+                return i
+            }
+        }
+        return -1
     }
 }

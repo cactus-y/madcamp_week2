@@ -6,7 +6,12 @@ import android.util.Log
 import com.auth0.android.jwt.JWT
 import com.example.madcamp_week2.api.data.user.User
 
-fun getUserInfoFromToken(context: Context, ): User {
+fun getUserTokenString(context: Context): String {
+    val pref =
+        context.getSharedPreferences(context.getString(R.string.pref_key), Activity.MODE_PRIVATE)
+    return pref.getString(context.getString(R.string.token_key), "")!!
+}
+fun getUserInfoFromToken(context: Context): User {
     val pref =
         context.getSharedPreferences(context.getString(R.string.pref_key), Activity.MODE_PRIVATE);
     val jwt = JWT(pref.getString(context.getString(R.string.token_key), "")!!)
