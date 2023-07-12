@@ -7,10 +7,33 @@ import android.util.Log
 import com.example.madcamp_week2.api.data.ChatMessage
 import com.example.madcamp_week2.db.ChatLogDBHelper
 import com.example.madcamp_week2.db.ChatLogReaderContract
+import com.example.madcamp_week2.db.ChatRoom
 import com.example.madcamp_week2.db.RoomDBHelper
 import com.example.madcamp_week2.db.RoomReaderContract
 
-fun createRoom(context: Context, data: com.example.madcamp_week2.db.ChatRoom): String {
+fun getRoomNumber(context: Context, data: ChatRoom): String {
+    val db = RoomDBHelper(context).readableDatabase
+    val projection = arrayOf(BaseColumns._ID, RoomReaderContract.RoomEntry.COLUMN_NAME_OTHER_ID, RoomReaderContract.RoomEntry.COLUMN_NAME_ROOM_NUMBER)
+    val selection = "${RoomReaderContract.RoomEntry.COLUMN_NAME_OTHER_ID} = ?"
+    val selectionArgs = arrayOf(data.otherId)
+    val cursor = db.query(
+        RoomReaderContract.RoomEntry.TABLE_NAME,   // The table to query
+        projection,             // The array of columns to return (pass null to get all)
+        selection,              // The columns for the WHERE clause
+        selectionArgs,          // The values for the WHERE clause
+        null,                   // don't group the rows
+        null,                   // don't filter by row groups
+        null               // The sort order
+    )
+    return if (cursor.moveToNext()) {
+        cursor.getString(cursor.getColumnIndexOrThrow(RoomReaderContract.RoomEntry.COLUMN_NAME_ROOM_NUMBER))
+    }
+    else {
+        createRoom(context, data)
+    }
+}
+
+fun createRoom(context: Context, data: ChatRoom): String {
     val db = RoomDBHelper(context).writableDatabase
     val values = ContentValues()
     values.put(RoomReaderContract.RoomEntry.COLUMN_NAME_MY_ID, data.myId)

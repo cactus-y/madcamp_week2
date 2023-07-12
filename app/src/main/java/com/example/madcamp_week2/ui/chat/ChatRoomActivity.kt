@@ -22,6 +22,7 @@ import com.example.madcamp_week2.util.ChatMessageBroadcastReceiver
 import com.example.madcamp_week2.util.SocketCompanion
 import com.example.madcamp_week2.util.addChatLogToDB
 import com.example.madcamp_week2.util.createRoom
+import com.example.madcamp_week2.util.getRoomNumber
 import com.google.gson.Gson
 import io.socket.client.Manager
 import io.socket.client.Socket
@@ -55,7 +56,7 @@ class ChatRoomActivity : AppCompatActivity() {
         otherProfileImage = intent.getStringExtra("otherProfileImage")
         supportActionBar!!.title = otherUsername
         // get room number
-        roomNumber = intent.getStringExtra("roomNumber") ?: createRoom(applicationContext,
+        roomNumber = intent.getStringExtra("roomNumber") ?: getRoomNumber(applicationContext,
             com.example.madcamp_week2.db.ChatRoom(
                 id = null,
                 myId = user.id,

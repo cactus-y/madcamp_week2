@@ -53,13 +53,6 @@ class ChatFragment : Fragment() {
         val roomList = getRoomListFromDB(requireContext())
         val adapter = ChatListAdapter(roomList)
         binding.rcvChatList.adapter = adapter
-        binding.floatingActionButton.setOnClickListener {
-            Intent(requireContext(), ChatRoomActivity::class.java).apply {
-                // putExtra
-                putExtra("otherId", "64abee0a50f6ef1791f3653c")
-                putExtra("otherUsername", "전산")
-            }.run { requireContext().startActivity(this) }
-        }
         receiver = ChatRoomBroadcastReceiver()
         receiver.setAdapter(adapter)
         val filter = IntentFilter("com.chatroom.notification")
