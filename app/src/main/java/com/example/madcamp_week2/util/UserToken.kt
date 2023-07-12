@@ -1,9 +1,10 @@
-package com.example.madcamp_week2
+package com.example.madcamp_week2.util
 
 import android.app.Activity
 import android.content.Context
 import android.util.Log
 import com.auth0.android.jwt.JWT
+import com.example.madcamp_week2.R
 import com.example.madcamp_week2.api.data.user.User
 
 fun getUserTokenString(context: Context): String {

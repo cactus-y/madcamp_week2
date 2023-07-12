@@ -27,7 +27,7 @@ import com.example.madcamp_week2.api.data.board.GetBoardListResponseBody
 import com.example.madcamp_week2.api.data.karaoke.GetKaraokeListResponseBody
 import com.example.madcamp_week2.api.data.karaoke.Karaoke
 import com.example.madcamp_week2.databinding.FragmentMapBinding
-import com.example.madcamp_week2.getUserToken
+import com.example.madcamp_week2.util.getUserToken
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import net.daum.mf.map.api.MapPOIItem
 import net.daum.mf.map.api.MapPoint

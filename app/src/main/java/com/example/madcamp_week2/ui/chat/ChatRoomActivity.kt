@@ -1,6 +1,5 @@
 package com.example.madcamp_week2.ui.chat
 
-import android.content.ContentValues
 import android.content.Context
 import android.content.IntentFilter
 import android.os.Bundle
@@ -8,7 +7,6 @@ import android.provider.BaseColumns
 import android.text.TextUtils
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
 import androidx.core.database.getStringOrNull
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -19,11 +17,8 @@ import com.example.madcamp_week2.api.data.user.User
 import com.example.madcamp_week2.databinding.ActivityChatRoomBinding
 import com.example.madcamp_week2.db.ChatLogDBHelper
 import com.example.madcamp_week2.db.ChatLogReaderContract
-import com.example.madcamp_week2.db.RoomDBHelper
-import com.example.madcamp_week2.db.RoomReaderContract
-import com.example.madcamp_week2.getUserInfoFromToken
+import com.example.madcamp_week2.util.getUserInfoFromToken
 import com.example.madcamp_week2.util.ChatMessageBroadcastReceiver
-import com.example.madcamp_week2.util.ChatRoomBroadcastReceiver
 import com.example.madcamp_week2.util.SocketCompanion
 import com.example.madcamp_week2.util.addChatLogToDB
 import com.example.madcamp_week2.util.createRoom

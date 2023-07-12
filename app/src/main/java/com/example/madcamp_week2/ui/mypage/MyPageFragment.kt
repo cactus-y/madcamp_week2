@@ -19,8 +19,8 @@ import com.example.madcamp_week2.api.data.board.MyBoard
 import com.example.madcamp_week2.api.data.guest.GetMyGusetListResponseBody
 import com.example.madcamp_week2.api.data.guest.MyGuest
 import com.example.madcamp_week2.databinding.FragmentMypageBinding
-import com.example.madcamp_week2.getUserInfoFromToken
-import com.example.madcamp_week2.getUserToken
+import com.example.madcamp_week2.util.getUserInfoFromToken
+import com.example.madcamp_week2.util.getUserToken
 import com.squareup.picasso.MemoryPolicy
 import com.squareup.picasso.Picasso
 import retrofit2.Call
