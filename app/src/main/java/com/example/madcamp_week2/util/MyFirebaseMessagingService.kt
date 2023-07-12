@@ -31,8 +31,6 @@ class MyFirebaseMessagingService: FirebaseMessagingService() {
             val senderProfileImage: String = data["senderProfileImage"]!!
             val message: String = data["message"]!!
             val timestamp: String = data["timestamp"]!!
-
-
             val applicationContext: Context = applicationContext
             var roomAdded = false
             if (!isRoomExist(applicationContext, roomNumber)) {
@@ -48,6 +46,18 @@ class MyFirebaseMessagingService: FirebaseMessagingService() {
                 createRoom(applicationContext, roomData)
                 roomAdded = true
             }
+            val chatRoomIntent = Intent()
+            chatRoomIntent.action = "com.chatroom.notification"
+            chatRoomIntent.putExtra("receiverId", receiverId)
+            chatRoomIntent.putExtra("roomNumber", roomNumber)
+            chatRoomIntent.putExtra("message", data["message"])
+            chatRoomIntent.putExtra("senderName", data["senderName"])
+            chatRoomIntent.putExtra("senderId", data["senderId"])
+            chatRoomIntent.putExtra("senderProfileImage", data["senderProfileImage"])
+            chatRoomIntent.putExtra("timestamp", data["timestamp"])
+            chatRoomIntent.putExtra("roomAdded", roomAdded)
+            sendBroadcast(chatRoomIntent)
+
             val messageData = ChatMessage(
                 id = null,
                 receiverId = receiverId,
@@ -58,19 +68,18 @@ class MyFirebaseMessagingService: FirebaseMessagingService() {
                 senderProfileImage = senderProfileImage,
                 timestamp = timestamp.toLong()
             )
-            addChatLogToDB(applicationContext, messageData)
-
-            val intent = Intent()
-            intent.action = "com.chat.notification"
-            intent.putExtra("receiverId", receiverId)
-            intent.putExtra("roomNumber", roomNumber)
-            intent.putExtra("message", data["message"])
-            intent.putExtra("senderName", data["senderName"])
-            intent.putExtra("senderId", data["senderId"])
-            intent.putExtra("senderProfileImage", data["senderProfileImage"])
-            intent.putExtra("timestamp", data["timestamp"])
-            intent.putExtra("roomAdded", roomAdded)
-            sendBroadcast(intent)
+            val id = addChatLogToDB(applicationContext, messageData)
+            val chatMessageIntent = Intent()
+            chatMessageIntent.action = "com.chatmessage.notification"
+            chatMessageIntent.putExtra("id", id)
+            chatMessageIntent.putExtra("receiverId", receiverId)
+            chatMessageIntent.putExtra("roomNumber", roomNumber)
+            chatMessageIntent.putExtra("message", data["message"])
+            chatMessageIntent.putExtra("senderName", data["senderName"])
+            chatMessageIntent.putExtra("senderId", data["senderId"])
+            chatMessageIntent.putExtra("senderProfileImage", data["senderProfileImage"])
+            chatMessageIntent.putExtra("timestamp", data["timestamp"])
+            sendBroadcast(chatMessageIntent)
             if (ForegroundDetector.instance!!.isBackground) {
                 sendNotification(remoteMessage.data["title"], remoteMessage.data["body"]!!)
             }

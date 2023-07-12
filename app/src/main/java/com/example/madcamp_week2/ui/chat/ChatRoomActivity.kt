@@ -2,11 +2,14 @@ package com.example.madcamp_week2.ui.chat
 
 import android.content.ContentValues
 import android.content.Context
+import android.content.IntentFilter
 import android.os.Bundle
 import android.provider.BaseColumns
 import android.text.TextUtils
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContentProviderCompat.requireContext
+import androidx.core.content.ContextCompat
 import androidx.core.database.getStringOrNull
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.madcamp_week2.R
@@ -18,6 +21,8 @@ import com.example.madcamp_week2.db.ChatLogDBHelper
 import com.example.madcamp_week2.db.ChatLogReaderContract
 import com.example.madcamp_week2.db.RoomDBHelper
 import com.example.madcamp_week2.db.RoomReaderContract
+import com.example.madcamp_week2.util.ChatMessageBroadcastReceiver
+import com.example.madcamp_week2.util.ChatRoomBroadcastReceiver
 import com.example.madcamp_week2.util.SocketCompanion
 import com.example.madcamp_week2.util.addChatLogToDB
 import com.example.madcamp_week2.util.createRoom
@@ -38,6 +43,7 @@ class ChatRoomActivity : AppCompatActivity() {
     private lateinit var binding: ActivityChatRoomBinding
     private lateinit var adapter: ChatMessageListAdapter
     private lateinit var mSocket: Socket
+    private lateinit var receiver: ChatMessageBroadcastReceiver;
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat_room)
@@ -65,9 +71,6 @@ class ChatRoomActivity : AppCompatActivity() {
                 latestMessage = ""
         ))
 
-        mSocket = SocketCompanion.get()
-        init()
-
         // get chat log
         val chatLog = getChatLog(applicationContext, roomNumber)
         adapter = ChatMessageListAdapter(chatLog, user)
@@ -78,46 +81,54 @@ class ChatRoomActivity : AppCompatActivity() {
         binding.sendButton.setOnClickListener {
             sendMessage()
         }
+        receiver = ChatMessageBroadcastReceiver()
+        receiver.setAdapter(adapter)
+        val filter = IntentFilter("com.chatmessage.notification")
+        ContextCompat.registerReceiver(
+            applicationContext,
+            receiver,
+            filter,
+            ContextCompat.RECEIVER_EXPORTED
+        )
     }
 
     private fun init() {
         if (!mSocket.connected()) {
             mSocket.connect()
-        }
-        mSocket.io().on(Manager.EVENT_TRANSPORT) { args ->
-            val transport: Transport = args[0] as Transport
-            transport.on(Transport.EVENT_ERROR) { args ->
-                val e = args[0] as Exception
-                Log.e("chat room activity", "Transport error $e")
-                e.printStackTrace()
-                e.cause!!.printStackTrace()
+            mSocket.io().on(Manager.EVENT_TRANSPORT) { args ->
+                val transport: Transport = args[0] as Transport
+                transport.on(Transport.EVENT_ERROR) { args ->
+                    val e = args[0] as Exception
+                    Log.e("chat room activity", "Transport error $e")
+                    e.printStackTrace()
+                    e.cause!!.printStackTrace()
+                }
             }
-        }
 
-        val gson = Gson()
-        mSocket.emit(
-            "enter",
-            gson.toJson(
-                ChatRoom(
-                    username = user.nickname,
-                    roomNumber = roomNumber,
-                    profileImage = user.profileImage
+            val gson = Gson()
+            mSocket.emit(
+                "enter",
+                gson.toJson(
+                    ChatRoom(
+                        username = user.nickname,
+                        roomNumber = roomNumber,
+                        profileImage = user.profileImage
+                    )
                 )
             )
-        )
-        mSocket.on("update") { args: Array<Any?>? ->
-            val data: ChatMessage = gson.fromJson(args!![0].toString(), ChatMessage::class.java)
-            Log.d("chat room activity", "$data")
-            if (data.senderId == user.id) {
-                addChatLogToDB(applicationContext, data)
-                adapter.addItem(data)
-                adapter.notifyDataSetChanged()
+            mSocket.on("update") { args: Array<Any?>? ->
+                val data: ChatMessage = gson.fromJson(args!![0].toString(), ChatMessage::class.java)
+                Log.d("chat room activity", "$data")
+                if (data.senderId == user.id) {
+                    addChat(data)
+                }
             }
         }
     }
 
     override fun onResume() {
         super.onResume()
+        mSocket = SocketCompanion.get()
         init()
     }
 
@@ -136,6 +147,16 @@ class ChatRoomActivity : AppCompatActivity() {
         val data = ChatMessage(id = null, senderId = user.id, senderName = user.nickname, msg = binding.chatEditText.text.toString(), roomNumber = roomNumber, senderProfileImage = user.profileImage, receiverId = otherId, timestamp = now)
         mSocket.emit("newMessage", gson.toJson(data))
         binding.chatEditText.setText("")
+    }
+
+    private fun addChat(data: ChatMessage) {
+        runOnUiThread {
+            val newRowId = addChatLogToDB(applicationContext, data)
+            if (newRowId != -1L) {
+                adapter.addItem(data)
+                adapter.notifyItemInserted(adapter.itemCount - 1)
+            }
+        }
     }
 
     private fun getChatLog(context: Context, roomNumber: String): MutableList<ChatMessage> {

@@ -1,20 +1,13 @@
 package com.example.madcamp_week2.util
 
 import android.content.BroadcastReceiver
-import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
-import android.provider.BaseColumns
 import android.util.Log
-import com.example.madcamp_week2.api.data.ChatMessage
-import com.example.madcamp_week2.db.ChatLogDBHelper
-import com.example.madcamp_week2.db.ChatLogReaderContract
 import com.example.madcamp_week2.db.ChatRoom
-import com.example.madcamp_week2.db.RoomDBHelper
-import com.example.madcamp_week2.db.RoomReaderContract
 import com.example.madcamp_week2.ui.chat.ChatListAdapter
 
-class MyBroadcastReceiver: BroadcastReceiver() {
+class ChatRoomBroadcastReceiver: BroadcastReceiver() {
     private lateinit var adapter: ChatListAdapter;
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -53,7 +46,7 @@ class MyBroadcastReceiver: BroadcastReceiver() {
             adapter.notifyItemChanged(index)
         }
     }
-    
+
     fun setAdapter(adapter: ChatListAdapter) {
         this.adapter = adapter
     }

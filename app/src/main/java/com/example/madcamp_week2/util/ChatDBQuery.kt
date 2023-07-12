@@ -30,7 +30,7 @@ fun createRoom(context: Context, data: com.example.madcamp_week2.db.ChatRoom): S
 
 fun isRoomExist(context: Context, roomNumber: String): Boolean {
     val db = RoomDBHelper(context).readableDatabase
-    val projection = arrayOf(BaseColumns._ID)
+    val projection = arrayOf(BaseColumns._ID, RoomReaderContract.RoomEntry.COLUMN_NAME_ROOM_NUMBER)
     val selection = "${RoomReaderContract.RoomEntry.COLUMN_NAME_ROOM_NUMBER} = ?"
     val selectionArgs = arrayOf(roomNumber)
     val cursor = db.query(
@@ -47,7 +47,27 @@ fun isRoomExist(context: Context, roomNumber: String): Boolean {
     return exist
 }
 
-fun addChatLogToDB(context: Context, data: ChatMessage) {
+fun checkDuplicateMessage(context: Context, data: ChatMessage): Boolean {
+    val db = ChatLogDBHelper(context).readableDatabase
+    val projection = arrayOf(BaseColumns._ID, ChatLogReaderContract.ChatLogEntry.COLUMN_NAME_SENDER_ID, ChatLogReaderContract.ChatLogEntry.COLUMN_NAME_TIMESTAMP)
+    val selection = "${ChatLogReaderContract.ChatLogEntry.COLUMN_NAME_SENDER_ID} = ? AND ${ChatLogReaderContract.ChatLogEntry.COLUMN_NAME_TIMESTAMP} = ?"
+    val selectionArgs = arrayOf(data.senderId, data.timestamp.toString())
+    val cursor = db.query(
+        ChatLogReaderContract.ChatLogEntry.TABLE_NAME,   // The table to query
+        projection,             // The array of columns to return (pass null to get all)
+        selection,              // The columns for the WHERE clause
+        selectionArgs,          // The values for the WHERE clause
+        null,                   // don't group the rows
+        null,                   // don't filter by row groups
+        null               // The sort order
+    )
+    val exist = cursor.moveToNext()
+    db.close()
+    return exist
+}
+
+fun addChatLogToDB(context: Context, data: ChatMessage): Long {
+    if (checkDuplicateMessage(context, data)) return -1L;
     val db = ChatLogDBHelper(context).writableDatabase
     val values = ContentValues()
     values.put(ChatLogReaderContract.ChatLogEntry.COLUMN_NAME_MESSAGE, data.msg)
@@ -64,4 +84,5 @@ fun addChatLogToDB(context: Context, data: ChatMessage) {
         Log.d("creating chat log", "내역을 추가했습니다.")
     }
     db.close()
+    return newRowId
 }

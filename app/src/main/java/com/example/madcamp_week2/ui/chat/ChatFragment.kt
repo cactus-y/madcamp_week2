@@ -19,7 +19,7 @@ import com.example.madcamp_week2.db.ChatLogReaderContract
 import com.example.madcamp_week2.db.ChatRoom
 import com.example.madcamp_week2.db.RoomDBHelper
 import com.example.madcamp_week2.db.RoomReaderContract
-import com.example.madcamp_week2.util.MyBroadcastReceiver
+import com.example.madcamp_week2.util.ChatRoomBroadcastReceiver
 
 
 class ChatFragment : Fragment() {
@@ -29,7 +29,7 @@ class ChatFragment : Fragment() {
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
-    private lateinit var receiver: MyBroadcastReceiver;
+    private lateinit var receiver: ChatRoomBroadcastReceiver;
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -50,9 +50,9 @@ class ChatFragment : Fragment() {
                 putExtra("otherUsername", "전산")
             }.run { requireContext().startActivity(this) }
         }
-        receiver = MyBroadcastReceiver()
+        receiver = ChatRoomBroadcastReceiver()
         receiver.setAdapter(adapter)
-        val filter = IntentFilter("com.chat.notification")
+        val filter = IntentFilter("com.chatroom.notification")
         registerReceiver(requireContext(), receiver, filter, ContextCompat.RECEIVER_EXPORTED)
         return root
     }
