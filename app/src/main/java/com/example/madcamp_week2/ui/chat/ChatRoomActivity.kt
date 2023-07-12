@@ -22,6 +22,7 @@ class ChatRoomActivity : AppCompatActivity() {
             val currentChatRoom = globalChatRoomList[chatRoomIndex]
             supportActionBar!!.title = currentChatRoom.otherUser.name
             binding.rcvChatMsgList.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+            binding.rcvChatMsgList.scrollToPosition(currentChatRoom.chatlog.size - 1)
             binding.rcvChatMsgList.adapter = ChatMessageListAdapter(currentChatRoom.chatlog)
         }
     }
