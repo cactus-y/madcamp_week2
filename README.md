@@ -15,7 +15,7 @@
 
 |구글 소셜 로그인 |회원 정보 입력|
 |:---:|:---:|
-| <img src="https://github.com/cactus-y/madcamp_week2_front/assets/89760088/a117c372-0d84-4d09-99cb-6b932ffe4200" width="200" style="object-fit:cover;" /> <img src="https://github.com/cactus-y/madcamp_week2_front/assets/89760088/62629f42-58c5-4c9a-85dd-1a222dd35f6f" width="200" style="object-fit:cover;"  /> | <img src="https://github.com/cactus-y/madcamp_week2_front/assets/89760088/5804a3e7-9aed-4319-a76c-61e31739b899" width="200" style="object-fit:cover;" /> <img src="https://github.com/cactus-y/madcamp_week2_front/assets/89760088/2512432a-1b45-4432-aa19-c709c12c6093" width="200" style="object-fit:cover;"  /> |
+| <img src="https://github.com/cactus-y/madcamp_week2_front/assets/89760088/cf9eb0c7-282b-4f24-a3f6-ce67b18c5507" width="200" style="object-fit:cover;" /> <img src="https://github.com/cactus-y/madcamp_week2_front/assets/89760088/62629f42-58c5-4c9a-85dd-1a222dd35f6f" width="200" style="object-fit:cover;"  /> | <img src="https://github.com/cactus-y/madcamp_week2_front/assets/89760088/5804a3e7-9aed-4319-a76c-61e31739b899" width="200" style="object-fit:cover;" /> <img src="https://github.com/cactus-y/madcamp_week2_front/assets/89760088/2512432a-1b45-4432-aa19-c709c12c6093" width="200" style="object-fit:cover;"  /> |
 - 구글 SDK를 이용해 소셜 로그인을 구현했습니다.
 - 최초 로그인 시 성별 및 노래 장르를 추가 입력해야 합니다.
 - 기본 닉네임은 구글에서 가져온 사용자 이름이고, 수정도 가능합니다.
@@ -25,6 +25,7 @@
 - 현위치 주변 1km 반경 내에 위치한 코인 노래방들을 볼 수 있습니다.
   - Kakao Map API와 Kakao Local REST API를 이용했습니다.
 - 마커를 클릭하면 코인 노래방 상세 정보를 볼 수 있습니다.
+- 같이 갈 사람 찾기 버튼을 눌러 글 정보를 입력하여 올릴 수 있스ㄴㅂ니다.
 - 스와이프하며 코노팟을 구하는 글들을 볼 수 있습니다.
 - 참여하기 버튼을 눌러 팟에 참여할 수 있습니다.
 - 채팅하기 버튼을 눌러 글 올린 사람과 채팅할 수 있습니다.
