@@ -11,6 +11,13 @@ var chatRoom1 =  SampleChatRoom(user2, arrayListOf(
         SampleChatMessage(user2, "Hello7", "2023/07/08 18:33:22"),
         SampleChatMessage(user1, "Hello8", "2023/07/09 08:12:20"),
         SampleChatMessage(user1, "Hello9", "2023/07/09 10:41:20"),
+        SampleChatMessage(user1, "Hello10", "2023/07/09 10:41:20"),
+        SampleChatMessage(user1, "Hello11", "2023/07/09 10:41:20"),
+        SampleChatMessage(user1, "Hello12", "2023/07/09 10:41:20"),
+        SampleChatMessage(user1, "Hello13", "2023/07/09 10:41:20"),
+        SampleChatMessage(user1, "Hello14", "2023/07/09 10:41:20"),
+        SampleChatMessage(user1, "Hello15", "2023/07/09 10:41:20"),
+
     )
 )
 
