@@ -142,6 +142,10 @@ class MapFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        val navbar = requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
+        if(navbar.visibility == View.GONE) {
+            navbar.visibility = View.VISIBLE
+        }
         userToken = getUserToken(requireContext())
         if(checkLocationService()) {
             permissionCheck()
@@ -278,6 +282,8 @@ class MapFragment : Fragment() {
         }
 
         override fun onMapViewDragStarted(p0: MapView?, p1: MapPoint?) {
+            val map = fragment.requireActivity().findViewById<MapView>(R.id.kakao_mapview)
+            map.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff
         }
 
         override fun onMapViewDragEnded(p0: MapView?, p1: MapPoint?) {

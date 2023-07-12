@@ -49,10 +49,13 @@
             android:exported="false" />
         <activity
             android:name=".ui.chat.ChatRoomActivity"
-            android:windowSoftInputMode="adjustPan"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustPan"/>
         <activity
             android:name=".MainActivity"
+            android:exported="false" />
+        <activity android:name=".ui.map.NewBoardActivity"
+            android:windowSoftInputMode="adjustResize"
             android:exported="false" />
         <activity
             android:name=".SplashActivity"
@@ -65,7 +68,7 @@
         </activity>
         <meta-data
             android:name="com.kakao.sdk.AppKey"
-            android:value="ada01f88ce5f2d97d5eb53c822ea406b" /> <!-- <meta-data -->
+            android:value="@string/kakao_app_key" /> <!-- <meta-data -->
         <!-- android:name="com.google.firebase.messaging.default_notification_icon" -->
         <!-- android:resource="@drawable/ic_stat_ic_notification" /> -->
         <!--

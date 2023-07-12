@@ -9,7 +9,6 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.madcamp_week2.R
 import com.example.madcamp_week2.db.ChatRoom
-import com.example.madcamp_week2.sample.SampleChatRoom
 import com.squareup.picasso.MemoryPolicy
 import com.squareup.picasso.Picasso
 

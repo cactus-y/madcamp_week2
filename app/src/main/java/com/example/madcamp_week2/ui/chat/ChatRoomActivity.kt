@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.provider.BaseColumns
 import android.text.TextUtils
 import android.util.Log
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
@@ -54,6 +55,7 @@ class ChatRoomActivity : AppCompatActivity() {
         // get user information
         user = getUserInfoFromToken(applicationContext)
 
+
         // get receiver information
         otherId = intent.getStringExtra("otherId")!!
         otherUsername = intent.getStringExtra("otherUsername")!!
@@ -77,6 +79,10 @@ class ChatRoomActivity : AppCompatActivity() {
         binding.rcvChatMsgList.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         binding.rcvChatMsgList.adapter = adapter
+        binding.rcvChatMsgList.scrollToPosition(adapter.itemCount - 1)
+
+
+
         binding.chatEditText.setText("")
         binding.sendButton.setOnClickListener {
             sendMessage()
@@ -155,6 +161,7 @@ class ChatRoomActivity : AppCompatActivity() {
             if (newRowId != -1L) {
                 adapter.addItem(data)
                 adapter.notifyItemInserted(adapter.itemCount - 1)
+//                binding.rcvChatMsgList.scrollToPosition(adapter.itemCount - 1)
             }
         }
     }

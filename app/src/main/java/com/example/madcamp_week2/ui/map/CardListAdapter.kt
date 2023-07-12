@@ -18,6 +18,7 @@ import com.example.madcamp_week2.api.data.guest.PostGuestRequestBody
 import com.example.madcamp_week2.api.data.guest.PostGuestResponseBody
 import com.example.madcamp_week2.getUserInfoFromToken
 import com.example.madcamp_week2.getUserToken
+import com.example.madcamp_week2.ui.chat.ChatRoomActivity
 import retrofit2.Call
 import retrofit2.Response
 
@@ -220,7 +221,12 @@ class CardListAdapter(private var list: MutableList<KaraokeOrBoard>): RecyclerVi
                 // setting chat button
                 if(validChat) {
                     tv_map_post_chat_button.setTextColor(Color.parseColor("#000000"))
-                    tv_map_post_chat_button.setOnClickListener {  }
+                    tv_map_post_chat_button.setOnClickListener {
+                        Intent(context, ChatRoomActivity::class.java).apply {
+                            putExtra("otherId", author.id)
+                            putExtra("otherUsername", author.nickname)
+                        }.run { context.startActivity(this) }
+                    }
                 } else
                     tv_map_post_chat_button.setTextColor(Color.parseColor("#D3D3D3"))
             }
