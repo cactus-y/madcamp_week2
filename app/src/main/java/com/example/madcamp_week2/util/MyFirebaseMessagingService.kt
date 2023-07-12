@@ -11,35 +11,70 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.madcamp_week2.MainActivity
 import com.example.madcamp_week2.R
+import com.example.madcamp_week2.api.data.ChatMessage
+import com.example.madcamp_week2.db.ChatRoom
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
 
-public class MyFirebaseMessagingService: FirebaseMessagingService() {
+class MyFirebaseMessagingService: FirebaseMessagingService() {
     private val TAG = "FirebaseTest"
 
     // 메세지가 수신되면 호출
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         if(remoteMessage.data.isNotEmpty()){
-            val notification = remoteMessage.notification
             val data = remoteMessage.data
+            val roomNumber: String =  data["roomNumber"]!!
+            val receiverId: String = data["receiverId"]!!
+            val senderId: String = data["senderId"]!!
+            val senderName: String = data["senderName"]!!
+            val senderProfileImage: String = data["senderProfileImage"]!!
+            val message: String = data["message"]!!
+            val timestamp: String = data["timestamp"]!!
+
+
+            val applicationContext: Context = applicationContext
+            var roomAdded = false
+            if (!isRoomExist(applicationContext, roomNumber)) {
+                val roomData = ChatRoom(
+                    id = null,
+                    roomNumber = roomNumber,
+                    myId = receiverId,
+                    otherId = senderId,
+                    otherUsername = senderName,
+                    otherProfileImage = senderProfileImage,
+                    latestMessage = message,
+                )
+                createRoom(applicationContext, roomData)
+                roomAdded = true
+            }
+            val messageData = ChatMessage(
+                id = null,
+                receiverId = receiverId,
+                roomNumber = roomNumber,
+                senderName =  senderName,
+                msg = message,
+                senderId = senderId,
+                senderProfileImage = senderProfileImage,
+                timestamp = timestamp.toLong()
+            )
+            addChatLogToDB(applicationContext, messageData)
+
             val intent = Intent()
             intent.action = "com.chat.notification"
-            intent.putExtra("receiverId", data["receiverId"])
-            intent.putExtra("roomNumber", data["roomNumber"])
+            intent.putExtra("receiverId", receiverId)
+            intent.putExtra("roomNumber", roomNumber)
             intent.putExtra("message", data["message"])
             intent.putExtra("senderName", data["senderName"])
             intent.putExtra("senderId", data["senderId"])
             intent.putExtra("senderProfileImage", data["senderProfileImage"])
             intent.putExtra("timestamp", data["timestamp"])
+            intent.putExtra("roomAdded", roomAdded)
             sendBroadcast(intent)
-
-            Log.d("notification", "$notification")
+            if (ForegroundDetector.instance!!.isBackground) {
+                sendNotification(remoteMessage.data["title"], remoteMessage.data["body"]!!)
+            }
             Log.d("data", "$data")
-            sendNotification(notification?.title, notification?.body!!)
-        }
-        else{
-
         }
     }
 
@@ -66,8 +101,8 @@ public class MyFirebaseMessagingService: FirebaseMessagingService() {
 
     private fun sendNotification(title: String?, body: String){
         val intent = Intent(this, MainActivity::class.java)
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP) // 액티비티 중복 생성 방지
         intent.putExtra("openChat", true)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP) // 액티비티 중복 생성 방지
         val pendingIntent = PendingIntent.getActivity(
             this,
             0,
@@ -96,6 +131,7 @@ public class MyFirebaseMessagingService: FirebaseMessagingService() {
             notificationManager.createNotificationChannel(channel)
         }
 
-        notificationManager.notify(0 , notificationBuilder.build()) // 알림 생성
+        val localTime: Long = System.currentTimeMillis()
+        notificationManager.notify(localTime.toInt() , notificationBuilder.build()) // 알림 생성
     }
 }

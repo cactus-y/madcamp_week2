@@ -7,5 +7,5 @@ data class ChatRoom(
     val otherId: String,
     val otherUsername: String,
     val otherProfileImage: String?,
-    val latestMessage: String
+    var latestMessage: String
 )

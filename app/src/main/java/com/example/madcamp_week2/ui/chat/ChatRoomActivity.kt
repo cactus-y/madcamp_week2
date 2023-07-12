@@ -19,6 +19,8 @@ import com.example.madcamp_week2.db.ChatLogReaderContract
 import com.example.madcamp_week2.db.RoomDBHelper
 import com.example.madcamp_week2.db.RoomReaderContract
 import com.example.madcamp_week2.util.SocketCompanion
+import com.example.madcamp_week2.util.addChatLogToDB
+import com.example.madcamp_week2.util.createRoom
 import com.example.madcamp_week2.util.getUserInfoFromToken
 import com.google.gson.Gson
 import io.socket.client.Manager
@@ -52,9 +54,33 @@ class ChatRoomActivity : AppCompatActivity() {
         otherProfileImage = intent.getStringExtra("otherProfileImage")
 
         // get room number
-        roomNumber = intent.getStringExtra("roomNumber") ?: createRoom(applicationContext)
+        roomNumber = intent.getStringExtra("roomNumber") ?: createRoom(applicationContext,
+            com.example.madcamp_week2.db.ChatRoom(
+                id = null,
+                myId = user.id,
+                otherId = otherId,
+                otherUsername = otherUsername,
+                otherProfileImage = otherProfileImage,
+                roomNumber = user.id + otherId,
+                latestMessage = ""
+        ))
 
         mSocket = SocketCompanion.get()
+        init()
+
+        // get chat log
+        val chatLog = getChatLog(applicationContext, roomNumber)
+        adapter = ChatMessageListAdapter(chatLog, user)
+        binding.rcvChatMsgList.layoutManager =
+            LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        binding.rcvChatMsgList.adapter = adapter
+        binding.chatEditText.setText("")
+        binding.sendButton.setOnClickListener {
+            sendMessage()
+        }
+    }
+
+    private fun init() {
         if (!mSocket.connected()) {
             mSocket.connect()
         }
@@ -82,20 +108,24 @@ class ChatRoomActivity : AppCompatActivity() {
         mSocket.on("update") { args: Array<Any?>? ->
             val data: ChatMessage = gson.fromJson(args!![0].toString(), ChatMessage::class.java)
             Log.d("chat room activity", "$data")
-            addChat(data, applicationContext)
-        }
-
-        // get chat log
-        val chatLog = getChatLog(applicationContext, roomNumber)
-        adapter = ChatMessageListAdapter(chatLog, user)
-        binding.rcvChatMsgList.layoutManager =
-            LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        binding.rcvChatMsgList.adapter = adapter
-        binding.chatEditText.setText("")
-        binding.sendButton.setOnClickListener {
-            sendMessage()
+            if (data.senderId == user.id) {
+                addChatLogToDB(applicationContext, data)
+                adapter.addItem(data)
+                adapter.notifyDataSetChanged()
+            }
         }
     }
+
+    override fun onResume() {
+        super.onResume()
+        init()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        mSocket.disconnect()
+    }
+
     private fun sendMessage() {
         val now = System.currentTimeMillis()
         val message = binding.chatEditText.text.toString().trim { it <= ' ' }
@@ -134,68 +164,22 @@ class ChatRoomActivity : AppCompatActivity() {
                 val senderName = getString(getColumnIndexOrThrow(ChatLogReaderContract.ChatLogEntry.COLUMN_NAME_SENDER_NAME))
                 val timestamp = getLong(getColumnIndexOrThrow(ChatLogReaderContract.ChatLogEntry.COLUMN_NAME_TIMESTAMP))
                 val senderProfileImage = getStringOrNull(getColumnIndexOrThrow(ChatLogReaderContract.ChatLogEntry.COLUMN_NAME_SENDER_PROFILE_IMAGE))
-                chatLogList.add(
-                    ChatMessage(
-                        id = id,
-                        senderName = senderName,
-                        roomNumber = roomNumber,
-                        timestamp = timestamp,
-                        senderProfileImage = senderProfileImage,
-                        msg = message,
-                        receiverId = receiverId,
-                        senderId = senderId
-                    )
+                val data = ChatMessage(
+                    id = id,
+                    senderName = senderName,
+                    roomNumber = roomNumber,
+                    timestamp = timestamp,
+                    senderProfileImage = senderProfileImage,
+                    msg = message,
+                    receiverId = receiverId,
+                    senderId = senderId
                 )
+                Log.d("chat log", "$data")
+                chatLogList.add(data)
             }
         }
         cursor.close()
+        db.close()
         return chatLogList
-    }
-
-    private fun addChat(data: ChatMessage, context: Context) {
-        runOnUiThread {
-            adapter.addItem(data)
-            adapter.notifyDataSetChanged()
-            if (data.senderId == user.id) {
-                addChatLogToDB(context, data)
-            }
-        }
-    }
-
-    private fun addChatLogToDB(context: Context, data: ChatMessage) {
-        val db = ChatLogDBHelper(context).writableDatabase
-        val values = ContentValues()
-        values.put(ChatLogReaderContract.ChatLogEntry.COLUMN_NAME_MESSAGE, data.msg)
-        values.put(ChatLogReaderContract.ChatLogEntry.COLUMN_NAME_ROOM_NUMBER, data.roomNumber)
-        values.put(ChatLogReaderContract.ChatLogEntry.COLUMN_NAME_SENDER_NAME, data.senderName)
-        values.put(ChatLogReaderContract.ChatLogEntry.COLUMN_NAME_SENDER_ID, data.senderId)
-        values.put(ChatLogReaderContract.ChatLogEntry.COLUMN_NAME_SENDER_PROFILE_IMAGE, data.senderProfileImage)
-        values.put(ChatLogReaderContract.ChatLogEntry.COLUMN_NAME_RECEIVER_ID, data.receiverId)
-        values.put(ChatLogReaderContract.ChatLogEntry.COLUMN_NAME_TIMESTAMP, System.currentTimeMillis())
-        val newRowId = db.insert(ChatLogReaderContract.ChatLogEntry.TABLE_NAME, null, values)
-        if (newRowId == -1L) {
-            Log.d("creating chat log", "내역을 추가하지 못했습니다.")
-        } else {
-            Log.d("creating chat log", "내역을 추가했습니다.")
-        }
-        db.close()
-    }
-
-    private fun createRoom(context: Context): String {
-        val db = RoomDBHelper(context).writableDatabase
-        val values = ContentValues()
-        values.put(RoomReaderContract.RoomEntry.COLUMN_NAME_MY_ID, user.id)
-        values.put(RoomReaderContract.RoomEntry.COLUMN_NAME_OTHER_ID, otherId)
-        values.put(RoomReaderContract.RoomEntry.COLUMN_NAME_ROOM_NUMBER, user.id + otherId)
-        values.put(RoomReaderContract.RoomEntry.COLUMN_NAME_OTHER_USERNAME, otherUsername)
-        values.put(RoomReaderContract.RoomEntry.COLUMN_NAME_OTHER_PROFILE_IMAGE, otherProfileImage)
-        val newRowId = db.insert(RoomReaderContract.RoomEntry.TABLE_NAME, null, values)
-        if (newRowId == -1L) {
-            Log.d("creating chat room", "내역을 추가하지 못했습니다.")
-        } else {
-            Log.d("creating chat room", "내역을 추가했습니다.")
-        }
-        db.close()
-        return user.id + otherId
     }
 }

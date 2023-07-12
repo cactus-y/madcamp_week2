@@ -62,6 +62,7 @@ class MainActivity : AppCompatActivity() {
             fragmentManager.beginTransaction().replace(R.id.nav_host_fragment_activity_main, chatFragment)
                 .addToBackStack(null)
                 .commit()
+            binding.navView.selectedItemId = R.id.navigation_chat
         }
 
 

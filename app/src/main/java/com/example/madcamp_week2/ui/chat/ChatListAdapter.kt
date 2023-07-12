@@ -59,4 +59,14 @@ class ChatListAdapter(private var list: MutableList<ChatRoom>): RecyclerView.Ada
         list.clear()
         list.addAll(list)
     }
+
+    fun updateLatestMessage(roomNumber: String, message: String): Int {
+        for (i: Int in list.indices) {
+            if (list[i].roomNumber == roomNumber) {
+                list[i].latestMessage = message
+                return i
+            }
+        }
+        return -1
+    }
 }

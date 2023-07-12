@@ -50,7 +50,8 @@ class ChatFragment : Fragment() {
                 putExtra("otherUsername", "전산")
             }.run { requireContext().startActivity(this) }
         }
-        receiver = MyBroadcastReceiver(adapter)
+        receiver = MyBroadcastReceiver()
+        receiver.setAdapter(adapter)
         val filter = IntentFilter("com.chat.notification")
         registerReceiver(requireContext(), receiver, filter, ContextCompat.RECEIVER_EXPORTED)
         return root
@@ -114,6 +115,7 @@ class ChatFragment : Fragment() {
             }
         }
         cursor.close()
+        db.close()
         return roomList
     }
     private fun getLatestMessage(context: Context, roomNumber: String): String? {
@@ -132,9 +134,14 @@ class ChatFragment : Fragment() {
             sortOrder               // The sort order
         )
         if (cursor.moveToNext()) {
-            return cursor.getString(cursor.getColumnIndexOrThrow(ChatLogReaderContract.ChatLogEntry.COLUMN_NAME_MESSAGE));
+            val message =  cursor.getString(cursor.getColumnIndexOrThrow(ChatLogReaderContract.ChatLogEntry.COLUMN_NAME_MESSAGE));
+            cursor.close()
+            db.close()
+            return message
         }
         else {
+            cursor.close()
+            db.close()
             return null;
         }
 
