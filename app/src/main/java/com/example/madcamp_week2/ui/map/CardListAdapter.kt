@@ -16,8 +16,8 @@ import com.example.madcamp_week2.api.APIObject
 import com.example.madcamp_week2.api.data.KaraokeOrBoard
 import com.example.madcamp_week2.api.data.guest.PostGuestRequestBody
 import com.example.madcamp_week2.api.data.guest.PostGuestResponseBody
-import com.example.madcamp_week2.getUserInfoFromToken
-import com.example.madcamp_week2.getUserToken
+import com.example.madcamp_week2.util.getUserInfoFromToken
+import com.example.madcamp_week2.util.getUserToken
 import retrofit2.Call
 import retrofit2.Response
 

@@ -1,20 +1,9 @@
 package com.example.madcamp_week2
 
-import com.example.madcamp_week2.R
 import android.os.Bundle
 import android.util.Log
-import android.view.ContextMenu
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
-import android.view.WindowManager
-import android.widget.PopupWindow
-import android.widget.TextView
-import android.widget.Toolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.FragmentTransaction
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
@@ -22,12 +11,12 @@ import androidx.navigation.ui.setupWithNavController
 import com.example.madcamp_week2.api.APIObject
 import com.example.madcamp_week2.api.data.PutDeviceTokenRequestBody
 import com.example.madcamp_week2.api.data.SuccessResponseBody
-import androidx.recyclerview.widget.RecyclerView
 import com.example.madcamp_week2.databinding.ActivityMainBinding
 import com.example.madcamp_week2.ui.chat.ChatFragment
 import com.example.madcamp_week2.ui.map.MapFragment
 import com.example.madcamp_week2.ui.mypage.MyPageFragment
 import com.example.madcamp_week2.util.MyFirebaseMessagingService
+import com.example.madcamp_week2.util.getUserTokenString
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
 import retrofit2.Call
