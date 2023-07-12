@@ -11,7 +11,10 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.registerReceiver
 import androidx.core.database.getStringOrNull
+import android.widget.LinearLayout
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.madcamp_week2.databinding.FragmentChatBinding
 import com.example.madcamp_week2.db.ChatLogDBHelper
@@ -36,10 +39,17 @@ class ChatFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+
+
         _binding = FragmentChatBinding.inflate(inflater, container, false)
 //        _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_chat, container, false)
         val root: View = binding.root
         binding.rcvChatList.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+        val decoCount = binding.rcvChatList.itemDecorationCount
+        if(decoCount != 0) {
+            binding.rcvChatList.removeItemDecorationAt(decoCount - 1)
+        }
+        binding.rcvChatList.addItemDecoration(DividerItemDecoration(context, LinearLayout.VERTICAL))
         val roomList = getRoomListFromDB(requireContext())
         val adapter = ChatListAdapter(roomList)
         binding.rcvChatList.adapter = adapter

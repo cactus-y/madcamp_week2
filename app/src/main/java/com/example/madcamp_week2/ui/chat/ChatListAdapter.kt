@@ -15,7 +15,7 @@ class ChatListAdapter(private var list: MutableList<ChatRoom>): RecyclerView.Ada
     inner class ListItemViewHolder(itemView: View?): RecyclerView.ViewHolder(itemView!!) {
         private val context = itemView!!.context
 
-        var iv_chat_user_profile_image: ImageView = itemView!!.findViewById(R.id.iv_chat_user_profile_image)
+        var iv_chat_user_profile_image: ImageView = itemView!!.findViewById(R.id.civ_chat_user_profile_image)
         var tv_chat_user_name: TextView = itemView!!.findViewById(R.id.tv_chat_user_name)
         var tv_chat_user_last_chat: TextView = itemView!!.findViewById(R.id.tv_chat_user_last_chat)
 

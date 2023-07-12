@@ -1,5 +1,9 @@
 package com.example.madcamp_week2.api
 
+import com.example.madcamp_week2.api.service.BoardService
+import com.example.madcamp_week2.api.service.GuestService
+import com.example.madcamp_week2.api.service.KaraokeService
+import com.example.madcamp_week2.api.service.MyPageService
 import com.example.madcamp_week2.api.service.DeviceTokenService
 import com.example.madcamp_week2.api.service.SocialLoginService
 import com.example.madcamp_week2.api.service.UserService
@@ -21,4 +25,8 @@ object APIObject {
     val getSocialLoginService : SocialLoginService by lazy { getRetrofit.create(SocialLoginService::class.java)}
     val getUserService: UserService by lazy { getRetrofit.create(UserService::class.java) }
     val getDeviceTokenService: DeviceTokenService by lazy { getRetrofit.create(DeviceTokenService::class.java) }
+    val getKaraokeService: KaraokeService by lazy { getRetrofit.create(KaraokeService::class.java) }
+    val getBoardService: BoardService by lazy { getRetrofit.create(BoardService::class.java) }
+    val getGuestService: GuestService by lazy { getRetrofit.create(GuestService::class.java)}
+    val getMyPageService: MyPageService by lazy { getRetrofit.create(MyPageService::class.java) }
 }

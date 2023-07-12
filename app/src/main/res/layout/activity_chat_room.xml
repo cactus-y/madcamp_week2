@@ -11,25 +11,32 @@
         android:id="@+id/rcv_chat_msg_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:layout_marginBottom="16dp"/>
 
     <LinearLayout
         android:id="@+id/ll_chat_msg_content_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="8dp"
+        android:layout_marginVertical="8dp"
         android:orientation="horizontal">
-
         <EditText
             android:id="@+id/chatEditText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:inputType="text" />
+            android:inputType="text"
+            android:layout_margin="4dp"/>
 
-        <Button
+        <TextView
             android:id="@+id/sendButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:background="@drawable/background_my_chat_message"
+            android:paddingVertical="12dp"
+            android:paddingHorizontal="20dp"
             android:text="Send" />
     </LinearLayout>
 

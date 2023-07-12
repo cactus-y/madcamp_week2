@@ -15,18 +15,18 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.madcamp_week2.R
 import com.example.madcamp_week2.api.data.ChatMessage
 import com.example.madcamp_week2.api.data.ChatRoom
-import com.example.madcamp_week2.api.data.User
+import com.example.madcamp_week2.api.data.user.User
 import com.example.madcamp_week2.databinding.ActivityChatRoomBinding
 import com.example.madcamp_week2.db.ChatLogDBHelper
 import com.example.madcamp_week2.db.ChatLogReaderContract
 import com.example.madcamp_week2.db.RoomDBHelper
 import com.example.madcamp_week2.db.RoomReaderContract
+import com.example.madcamp_week2.getUserInfoFromToken
 import com.example.madcamp_week2.util.ChatMessageBroadcastReceiver
 import com.example.madcamp_week2.util.ChatRoomBroadcastReceiver
 import com.example.madcamp_week2.util.SocketCompanion
 import com.example.madcamp_week2.util.addChatLogToDB
 import com.example.madcamp_week2.util.createRoom
-import com.example.madcamp_week2.util.getUserInfoFromToken
 import com.google.gson.Gson
 import io.socket.client.Manager
 import io.socket.client.Socket
@@ -58,7 +58,7 @@ class ChatRoomActivity : AppCompatActivity() {
         otherId = intent.getStringExtra("otherId")!!
         otherUsername = intent.getStringExtra("otherUsername")!!
         otherProfileImage = intent.getStringExtra("otherProfileImage")
-
+        supportActionBar!!.title = otherUsername
         // get room number
         roomNumber = intent.getStringExtra("roomNumber") ?: createRoom(applicationContext,
             com.example.madcamp_week2.db.ChatRoom(

@@ -11,7 +11,7 @@ import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
 import com.example.madcamp_week2.api.data.ChatMessage
 import com.example.madcamp_week2.R
-import com.example.madcamp_week2.api.data.User
+import com.example.madcamp_week2.api.data.user.User
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -20,7 +20,7 @@ class ChatMessageListAdapter(private var list: MutableList<ChatMessage>, private
         private val context = itemView!!.context
 
         var tv_chat_msg_changed_date: TextView = itemView!!.findViewById(R.id.tv_chat_msg_changed_date)
-        var iv_chat_msg_user_profile_image: ImageView = itemView!!.findViewById(R.id.iv_chat_msg_user_profile_image)
+        var iv_chat_msg_user_profile_image: ImageView = itemView!!.findViewById(R.id.civ_chat_msg_user_profile_image)
         var tv_chat_msg_content: TextView = itemView!!.findViewById(R.id.tv_chat_msg_content)
         var tv_chat_msg_other_timestamp: TextView = itemView!!.findViewById(R.id.tv_chat_msg_other_timestamp)
         var tv_chat_msg_my_timestamp: TextView = itemView!!.findViewById(R.id.tv_chat_msg_my_timestamp)
@@ -37,6 +37,7 @@ class ChatMessageListAdapter(private var list: MutableList<ChatMessage>, private
 
             // stick to right or left
             if(item.senderName != user.nickname) {
+                tv_chat_msg_content.setBackgroundResource(R.drawable.background_other_chat_message)
                 if(position == 0) {
                     iv_chat_msg_user_profile_image.visibility = View.VISIBLE
                 } else {
@@ -48,6 +49,7 @@ class ChatMessageListAdapter(private var list: MutableList<ChatMessage>, private
                 }
 //                ll_chat_img_and_msg_container.gravity = Gravity.START
             } else {
+                tv_chat_msg_content.setBackgroundResource(R.drawable.background_my_chat_message)
 //                ll_chat_img_and_msg_container.gravity = Gravity.END
                 iv_chat_msg_user_profile_image.visibility = View.GONE
                 view_put_msg_to_right.visibility = View.VISIBLE

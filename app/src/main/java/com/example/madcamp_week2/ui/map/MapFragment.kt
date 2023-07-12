@@ -5,11 +5,11 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,22 +17,27 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.widget.ViewPager2
+import com.auth0.android.jwt.JWT
 import com.example.madcamp_week2.R
+import com.example.madcamp_week2.api.APIObject
+import com.example.madcamp_week2.api.data.KaraokeOrBoard
+import com.example.madcamp_week2.api.data.board.GetBoardListResponseBody
+import com.example.madcamp_week2.api.data.karaoke.GetKaraokeListResponseBody
+import com.example.madcamp_week2.api.data.karaoke.Karaoke
 import com.example.madcamp_week2.databinding.FragmentMapBinding
-import com.example.madcamp_week2.sample.KaraokeOrPost
-import com.example.madcamp_week2.sample.SampleKaraoke
-import com.example.madcamp_week2.sample.globalKaraokeList
-import com.example.madcamp_week2.sample.globalPostList
+import com.example.madcamp_week2.getUserToken
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.tabs.TabLayoutMediator
 import net.daum.mf.map.api.MapPOIItem
 import net.daum.mf.map.api.MapPoint
 import net.daum.mf.map.api.MapView
-import net.daum.mf.map.api.MapView.GONE
 import net.daum.mf.map.api.MapView.MapViewEventListener
+import retrofit2.Call
+import retrofit2.Response
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 class MapFragment : Fragment() {
 
@@ -42,6 +47,10 @@ class MapFragment : Fragment() {
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
+    private var karaokeList = ArrayList<Karaoke>()
+//    private var karaokeOrGuestList = ArrayList<KaraokeOrGuest>()
+
+    private lateinit var userToken: JWT
 
     private lateinit var markerEventListener: MarkerEventListener
     private lateinit var mapEventListener: MapEventListener
@@ -52,18 +61,10 @@ class MapFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentMapBinding.inflate(inflater, container, false)
-//        _binding = DataBindingUtil.inflate(inflater, R.layout.fragment_map, container, false)
         val root: View = binding.root
-        markerEventListener = MarkerEventListener(this, binding)
+        userToken = getUserToken(requireContext())
+        markerEventListener = MarkerEventListener(this, binding, karaokeList)
         mapEventListener = MapEventListener(this, binding)
-//        mapView = MapView(context)
-//
-//        if(checkLocationService()) {
-//            permissionCheck()
-//            stopTracking()
-//        } else {
-//            Toast.makeText(context, "GPS를 켜주세요", Toast.LENGTH_SHORT).show()
-//        }
 
         return root
     }
@@ -101,6 +102,8 @@ class MapFragment : Fragment() {
             }
         } else {
             startTracking()
+
+
         }
     }
 
@@ -128,17 +131,7 @@ class MapFragment : Fragment() {
         binding.kakaoMapview.setPOIItemEventListener(markerEventListener)
         binding.kakaoMapview.setMapViewEventListener(mapEventListener)
 
-        // sample karaokes
-        globalKaraokeList.forEach {
-            val marker = MapPOIItem()
-            val itemName = it.name + "/" + it.address + "/" + it.roadAddress + "/" + it.latitude.toString() + "/" + it.longitude.toString() + "/" + it.phoneNumber
-            marker.itemName = itemName
-            marker.mapPoint = MapPoint.mapPointWithGeoCoord(it.latitude, it.longitude)
-            marker.isShowCalloutBalloonOnTouch = false
-            marker.markerType = MapPOIItem.MarkerType.BluePin
-            marker.selectedMarkerType = MapPOIItem.MarkerType.RedPin
-            binding.kakaoMapview.addPOIItem(marker)
-        }
+        callKaraokeListAPI(uLatitude.toString(), uLongitude.toString())
 
     }
 
@@ -147,9 +140,9 @@ class MapFragment : Fragment() {
 //        binding.flMap.addView(mapView)
     }
 
-
     override fun onResume() {
         super.onResume()
+        userToken = getUserToken(requireContext())
         if(checkLocationService()) {
             permissionCheck()
 //            stopTracking()
@@ -160,9 +153,10 @@ class MapFragment : Fragment() {
     }
 
 
-
     override fun onPause() {
         super.onPause()
+        binding.kakaoMapview.removeAllPOIItems()
+        binding.vpMapCardviewContainer.visibility = View.GONE
         stopTracking()
 //        binding.flMap.removeAllViews()
     }
@@ -173,7 +167,9 @@ class MapFragment : Fragment() {
         _binding = null
     }
 
-    class MarkerEventListener(val fragment: MapFragment, val binding: FragmentMapBinding): MapView.POIItemEventListener {
+    class MarkerEventListener(val fragment: MapFragment, val binding: FragmentMapBinding, val karaokeList: ArrayList<Karaoke>): MapView.POIItemEventListener {
+
+
         override fun onPOIItemSelected(p0: MapView?, p1: MapPOIItem?) {
             val bottomNavigationView = fragment.requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
             bottomNavigationView.visibility = View.GONE
@@ -181,57 +177,66 @@ class MapFragment : Fragment() {
             binding.kakaoMapview.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff
             val temp = p1!!.itemName.split("/")
 
-            val karaokeName = temp[0]
-            val karaokeAddr = temp[1]
-            val karaokeRoadAddr = temp[2]
-            val karaokeLat = temp[3]
-            val karaokeLong = temp[4]
-            val karaokePhone = temp[5]
+            val karaokeObjectId = temp[0]
 
             // visibility setting
             binding.vpMapCardviewContainer.visibility = View.VISIBLE
 
             // make list here
-            val foundKaraoke = globalKaraokeList.find { it.latitude.toString() == karaokeLat && it.longitude.toString() == karaokeLong }
-            val karaokeOrPostList = ArrayList<KaraokeOrPost>()
-            karaokeOrPostList.add(KaraokeOrPost(foundKaraoke, null))
+            val foundKaraoke = karaokeList.find { it.karaokeObjectId == karaokeObjectId }
 
-            globalPostList.forEach {
-                if(foundKaraoke == it.karaoke)
-                    karaokeOrPostList.add(KaraokeOrPost(null, it))
-            }
 
-            // adapter here
-            binding.vpMapCardviewContainer.adapter = CardListAdapter(karaokeOrPostList)
-            binding.vpMapCardviewContainer.registerOnPageChangeCallback(object: ViewPager2.OnPageChangeCallback() {
-                override fun onPageScrolled(
-                    position: Int,
-                    positionOffset: Float,
-                    positionOffsetPixels: Int
+            val karaokeOrBoardList = ArrayList<KaraokeOrBoard>()
+            karaokeOrBoardList.add(KaraokeOrBoard(foundKaraoke, null))
+
+            val call = APIObject.getBoardService.getBoardList(karaokeObjectId)
+            call.enqueue(object: retrofit2.Callback<GetBoardListResponseBody> {
+                override fun onResponse(
+                    call: Call<GetBoardListResponseBody>,
+                    response: Response<GetBoardListResponseBody>
                 ) {
-                    super.onPageScrolled(position, positionOffset, positionOffsetPixels)
+                    if(response.isSuccessful) {
+                        val data: GetBoardListResponseBody? = response.body()
+                        data?.boardList?.forEach {
+                            val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+                            val currentDate = Calendar.getInstance().time
+
+                            val deadLineDate = dateFormat.parse(it.deadLine)
+
+                            // if current date is after the deadline
+                            // set text color as gray
+                            if(!currentDate.after(deadLineDate))
+                                karaokeOrBoardList.add(KaraokeOrBoard(null, it))
+                        }
+
+                        // adapter here
+                        binding.vpMapCardviewContainer.adapter = CardListAdapter(karaokeOrBoardList)
+                        binding.vpMapCardviewContainer.registerOnPageChangeCallback(object: ViewPager2.OnPageChangeCallback() {
+                            override fun onPageScrolled(
+                                position: Int,
+                                positionOffset: Float,
+                                positionOffsetPixels: Int
+                            ) {
+                                super.onPageScrolled(position, positionOffset, positionOffsetPixels)
+                            }
+
+                            override fun onPageSelected(position: Int) {
+                                super.onPageSelected(position)
+                            }
+
+                            override fun onPageScrollStateChanged(state: Int) {
+                                super.onPageScrollStateChanged(state)
+                            }
+                        })
+
+                    }
                 }
 
-                override fun onPageSelected(position: Int) {
-                    super.onPageSelected(position)
-                }
-
-                override fun onPageScrollStateChanged(state: Int) {
-                    super.onPageScrollStateChanged(state)
+                override fun onFailure(call: Call<GetBoardListResponseBody>, t: Throwable) {
+                    Log.d("Board list GET failed", "GET failed")
                 }
             })
 
-//            binding.cvMapKaraokeInfoContainer.visibility = View.VISIBLE
-//            binding.tvMapKaraokeName.text =
-//            binding.tvMapKaraokeAddr.text = temp[1]
-//            binding.tvMapKaraokeRoadAddr.text = temp[2]
-//            if(temp[5] == "") {
-//                binding.tvMapKaraokePhone.text = "전화번호가 없어요!"
-//                binding.tvMapKaraokePhone.setTextColor(Color.parseColor("#D3D3D3"))
-//            } else {
-//                binding.tvMapKaraokePhone.text = temp[5]
-//                binding.tvMapKaraokePhone.setTextColor(Color.parseColor("#000000"))
-//            }
         }
 
         override fun onCalloutBalloonOfPOIItemTouched(p0: MapView?, p1: MapPOIItem?) {
@@ -281,6 +286,46 @@ class MapFragment : Fragment() {
         override fun onMapViewMoveFinished(p0: MapView?, p1: MapPoint?) {
         }
 
+    }
+
+    private fun callKaraokeListAPI(latitude: String, longitude: String) {
+        // whenever this method is called, karaoke list will grow infinitely
+        // clear karaoke list
+        karaokeList.clear()
+
+        // radius is 1 km
+        val call = APIObject.getKaraokeService.getKaraokeList(1000, longitude, latitude)
+        call.enqueue(object: retrofit2.Callback<GetKaraokeListResponseBody> {
+            override fun onResponse(
+                call: Call<GetKaraokeListResponseBody>,
+                response: Response<GetKaraokeListResponseBody>
+            ) {
+                if(response.isSuccessful) {
+                    println("\n\n\nSuccessful\n\n\n")
+                    val data: GetKaraokeListResponseBody? = response.body()
+                    println("\n\n\n${data?.karaokeListData?.count}\n\n\n")
+                    data?.karaokeListData?.karaokeList?.forEach {
+                        println("\n\n\nin api call: ${it.name}\n\n\n")
+                        karaokeList.add(it)
+                        val marker = MapPOIItem()
+                        val itemName = it.karaokeObjectId + "/" + it.name + "/" + it.address + "/" + it.roadAddress + "/" + it.phone
+
+                        println("\n\n\n${itemName}\n\n\n")
+
+                        marker.itemName = itemName
+                        marker.mapPoint = MapPoint.mapPointWithGeoCoord(it.latitude.toDouble(), it.longitude.toDouble())
+                        marker.isShowCalloutBalloonOnTouch = false
+                        marker.markerType = MapPOIItem.MarkerType.BluePin
+                        marker.selectedMarkerType = MapPOIItem.MarkerType.RedPin
+                        binding.kakaoMapview.addPOIItem(marker)
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<GetKaraokeListResponseBody>, t: Throwable) {
+                Toast.makeText(context, "노래방 검색 실패", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
 }
